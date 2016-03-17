@@ -1,0 +1,11 @@
+[run]
+branch = True
+source = klusta
+
+[report]
+exclude_lines =
+    pragma: no cover
+    raise AssertionError
+    raise NotImplementedError
+    pass
+    return
