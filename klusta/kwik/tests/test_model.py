@@ -204,6 +204,40 @@ def test_kwik_open_no_kwd(tempdir):
     kwik.close()
 
 
+def test_kwik_save(tempdir):
+
+    # Create the test HDF5 file in the temporary directory.
+    filename = create_mock_kwik(tempdir,
+                                n_clusters=_N_CLUSTERS,
+                                n_spikes=_N_SPIKES,
+                                n_channels=_N_CHANNELS,
+                                n_features_per_channel=_N_FETS,
+                                n_samples_traces=_N_SAMPLES_TRACES)
+
+    kwik = KwikModel(filename)
+
+    cluster_groups = {cluster: kwik.cluster_metadata[cluster]
+                      for cluster in range(_N_CLUSTERS)}
+    sc_0 = kwik.spike_clusters.copy()
+    sc_1 = sc_0.copy()
+    new_cluster = _N_CLUSTERS + 10
+    sc_1[_N_SPIKES // 2:] = new_cluster
+    cluster_groups[new_cluster] = 'new'
+    ae(kwik.spike_clusters, sc_0)
+
+    assert kwik.cluster_metadata[new_cluster] == 3
+    kwik.save(sc_1, cluster_groups, {'test': (1, 2.)})
+    ae(kwik.spike_clusters, sc_1)
+    assert kwik.cluster_metadata[new_cluster] == 'new'
+
+    kwik.close()
+
+    kwik = KwikModel(filename)
+    ae(kwik.spike_clusters, sc_1)
+    assert kwik.cluster_metadata[new_cluster] == 'new'
+    ae(kwik.clustering_metadata['test'], [1, 2])
+
+
 def test_kwik_clusterings(tempdir):
 
     # Create the test HDF5 file in the temporary directory.
