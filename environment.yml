@@ -1,0 +1,12 @@
+name: klusta
+channels:
+  - kwikteam
+dependencies:
+  - python
+  - pip
+  - numpy=1.9
+  - scipy
+  - h5py
+  - six
+  - cython
+  - click
