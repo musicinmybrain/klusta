@@ -51,11 +51,11 @@ setup(
     package_data={
         'klusta': ['*.txt', '*.prb'],
     },
-    entry_points={
-        'console_scripts': [
-            'klusta = klusta.utils.cli:klusta'
-        ],
-    },
+    # entry_points={
+    #     'console_scripts': [
+    #         'klusta = klusta.utils.cli:klusta'
+    #     ],
+    # },
     include_package_data=True,
     keywords='klusta,neuroscience,spike sorting,klustakwik',
     classifiers=[
