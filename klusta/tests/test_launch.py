@@ -8,8 +8,6 @@
 
 import os.path as op
 
-import numpy as np
-from numpy.testing import assert_array_equal as ae
 from pytest import fixture
 
 from ..launch import detect, cluster
@@ -37,16 +35,29 @@ def kwik_path(tempdir):
 # Tests
 #------------------------------------------------------------------------------
 
-def test_detect(kwik_path):
+def test_launch(kwik_path):
+    creator = KwikCreator(kwik_path)
+
+    # Detection.
     model = KwikModel(kwik_path)
     out = detect(model, interval=(0, 1))
     model.close()
 
-    creator = KwikCreator(kwik_path)
+    # Add spikes in the kwik file.
     creator.add_spikes_after_detection(out)
 
+    # Clustering.
     model = KwikModel(kwik_path)
-    model.describe()
+    assert model.channel_group == 0
+    assert model.n_spikes >= 100
+    spike_clusters, metadata = cluster(model)
+    # Add a new clustering and switch to it.
+    model.add_clustering('main', spike_clusters)
+    model.copy_clustering('main', 'original')
+    model.clustering_metadata.update(metadata)
+    model.close()
 
-    # sc, metadata = cluster(model)
-    # print(sc)
+    # Check.
+    model = KwikModel(kwik_path)
+    assert model.n_clusters >= 5
+    model.describe()

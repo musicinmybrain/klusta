@@ -112,9 +112,4 @@ def cluster(model, spike_ids=None, **kwargs):
     metadata = {'klustakwik2_{}'.format(name): value
                 for name, value in params.items()}
 
-    # # Add a new clustering and switch to it.
-    # model.add_clustering('main', spike_clusters)
-    # model.copy_clustering('main', 'original')
-    # model.clustering_metadata.update(metadata)
-
     return sc, metadata
