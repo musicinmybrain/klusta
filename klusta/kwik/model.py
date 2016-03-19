@@ -760,6 +760,7 @@ class KwikModel(object):
             if h5_path not in f:
                 logger.debug("There are no features and masks in the "
                              "`.kwx` file.")
+                self._features_masks = self._features = self._masks = None
                 return
 
         # Now we are sure that the kwx file exists and contains the features
@@ -783,7 +784,10 @@ class KwikModel(object):
 
         # Concatenate the spike samples from consecutive recordings.
         if path not in self._kwik:
-            logger.debug("There are no spikes in the dataset.")
+            logger.debug("No spikes found.")
+            self._spike_recordings = np.array([], dtype=np.int32)
+            self._spike_samples = None
+            self._recording_offsets = np.array([], dtype=np.int32)
             return
         _spikes = self._kwik.read(path)[:]
         self._spike_recordings = self._kwik.read(
@@ -1058,6 +1062,9 @@ class KwikModel(object):
             else:
                 self._load_clusterings(clusterings[0])
                 self.clustering = clusterings[0]
+        else:
+            self._spike_clusters = None
+            self._clustering = None
 
         self._probe.change_channel_group(value)
         self._load_channels()
