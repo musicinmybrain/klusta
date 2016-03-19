@@ -10,3 +10,5 @@ dependencies:
   - six
   - cython
   - click
+  -pip:
+    - tqdm
