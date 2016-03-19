@@ -552,6 +552,7 @@ class KwikModel(object):
         self._spike_samples = None
         self._spike_clusters = None
         self._metadata = None
+        self._kk2_metadata = None
         self._clustering = clustering or 'main'
         self._probe = None
         self._channels = []
@@ -681,21 +682,21 @@ class KwikModel(object):
     def _create_cluster_metadata(self):
         self._cluster_metadata = defaultdict(lambda: 3)
 
-    def _load_meta(self):
+    def _load_meta(self, name='spikedetekt'):
         """Load metadata from kwik file."""
         # Automatically load all metadata from spikedetekt group.
-        path = '/application_data/spikedetekt/'
+        path = '/application_data/{}/'.format(name)
         params = {}
         for attr in self._kwik.attrs(path):
             params[attr] = self._kwik.read_attr(path, attr)
         # Load the default spikedetekt parameters.
         curdir = op.realpath(op.dirname(__file__))
         path = op.join(curdir, '../traces/default_settings.py')
-        dfs = _read_python(path)['spikedetekt']
+        dfs = _read_python(path).get(name, {})
         for name, default_value in dfs.items():
             if name not in params:
                 params[name] = default_value
-        self._metadata = params
+        return params
 
     def _load_probe(self):
         # Re-create the probe from the Kwik file.
@@ -966,10 +967,11 @@ class KwikModel(object):
             raise IOError("File `{0}` failed to open.".format(kwik_path))
         self._check_kwik_version()
 
-        # Load the data.
-        self._load_meta()
+        # Load the metadata.
+        self._metadata = self._load_meta('spikedetekt')
+        self._kk2_metadata = self._load_meta('klustakwik2')
 
-        # This needs metadata.
+        # This needs the metadata.
         self._create_waveform_loader()
 
         self._load_recordings()
@@ -1000,15 +1002,22 @@ class KwikModel(object):
 
         logger.info("Kwik file `%s` loaded.", self.kwik_path)
 
-    def save(self, spike_clusters, cluster_groups, clustering_metadata=None):
+    def save(self,
+             spike_clusters=None,
+             cluster_groups=None,
+             clustering_metadata=None,
+             ):
         """Save the spike clusters and cluster groups in the Kwik file."""
 
         # REFACTOR: with() to open/close the file if needed
         to_close = self._open_kwik_if_needed(mode='a')
 
-        self._save_spike_clusters(spike_clusters)
-        self._save_cluster_groups(cluster_groups)
-        self._save_clustering_metadata(clustering_metadata)
+        if spike_clusters is not None:
+            self._save_spike_clusters(spike_clusters)
+        if cluster_groups is not None:
+            self._save_cluster_groups(cluster_groups)
+        if clustering_metadata is not None:
+            self._save_clustering_metadata(clustering_metadata)
         logger.info("Save the Kwik file at `%s`.", self.kwik_path)
 
         if to_close:
@@ -1334,10 +1343,15 @@ class KwikModel(object):
         """A dictionary holding metadata about the experiment.
 
         This information comes from the PRM file. It was used by
-        SpikeDetekt2 and KlustaKwik during automatic clustering.
+        SpikeDetekt2 during spike detection.
 
         """
         return self._metadata
+
+    @property
+    def kk2_metadata(self):
+        """A dictionary holding KK2 metadata."""
+        return self._kk2_metadata
 
     @property
     def probe(self):

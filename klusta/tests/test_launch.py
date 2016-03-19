@@ -102,6 +102,8 @@ def test_launch_shanks(tempdir, prm_path_shanks):
     assert model.n_spikes == 0
     assert model.n_clusters == 0
 
+    assert model.clustering_metadata['klustakwik2_num_starting_clusters'] == 20
+
 
 def test_launch_real(tempdir, prm_path_real):
     kwik_path = klusta(prm_path_real,

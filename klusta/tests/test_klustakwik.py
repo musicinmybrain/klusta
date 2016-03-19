@@ -100,7 +100,7 @@ def test_sparsify_features_masks():
         aae(data_m, true_m)
 
 
-def test_cluster(tempdir):
+def test_klustakwik(tempdir):
     n_spikes = 100
     filename = create_mock_kwik(tempdir,
                                 n_clusters=1,
@@ -111,6 +111,7 @@ def test_cluster(tempdir):
     model = KwikModel(filename)
 
     spike_clusters, params = klustakwik(model, num_starting_clusters=10)
+    assert params['num_starting_clusters'] == 10
     assert len(spike_clusters) == n_spikes
 
     spike_clusters, params = klustakwik(model, num_starting_clusters=10,

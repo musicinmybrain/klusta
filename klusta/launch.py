@@ -8,7 +8,6 @@
 
 import logging
 import os.path as op
-from pprint import pformat
 import shutil
 import sys
 
@@ -50,8 +49,9 @@ def detect(model, interval=None, **kwargs):
     params = model.metadata
     params.update(kwargs)
     # Pretty print params.
-    p_params = pformat(params)
-    logger.info("Parameters: %s", p_params)
+    logger.info("SpikeDetekt parameters:")
+    for key, value in params.items():
+        logger.info("%s = %s", key, value)
 
     # Probe parameters required by SpikeDetekt.
     params['probe_channels'] = model.probe.channels_per_group
@@ -79,14 +79,9 @@ def cluster(model, spike_ids=None, **kwargs):
     kk_dir = op.join(expdir, '.klustakwik2')
     _ensure_dir_exists(kk_dir)
 
-    # Take KK's default parameters.
-    from klustakwik2.default_parameters import default_parameters
-    params = default_parameters.copy()
-    # Update the PRM ones, by filtering them.
-    params.update({k: v for k, v in model.metadata.items()
-                   if k in default_parameters})
-    # Update the ones passed to the function.
+    params = model.kk2_metadata
     params.update(kwargs)
+    print(params)
 
     # Original spike_clusters array.
     if model.spike_clusters is None:
@@ -109,8 +104,10 @@ def cluster(model, spike_ids=None, **kwargs):
 
     logger.info("Running KK...")
     # Run KK.
-    sc, params = klustakwik(model=model, spike_ids=spike_ids,
-                            iter_callback=on_iter)
+    sc, params = klustakwik(model=model,
+                            spike_ids=spike_ids,
+                            iter_callback=on_iter,
+                            **params)
     logger.info("The automatic clustering process has finished.")
 
     # Save the results in the Kwik file.
@@ -188,6 +185,7 @@ def klusta(prm_file,
             model.add_clustering('main', spike_clusters)
             model.copy_clustering('main', 'original')
             model.clustering_metadata.update(metadata)
+            model.save(clustering_metadata=model.clustering_metadata)
             model.close()
         logger.info("Clustering done!")
 

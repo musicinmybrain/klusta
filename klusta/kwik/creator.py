@@ -437,7 +437,6 @@ def create_kwik(prm_file=None,
         params['experiment_name'] = experiment_name
         params['prb_file'] = prm.get('prb_file', None)
         params.update(prm['spikedetekt'])
-        params.update(prm['klustakwik2'])
         params.update(prm['traces'])
     params.update(kwargs)
 
@@ -486,6 +485,9 @@ def create_kwik(prm_file=None,
                                          dtype=dtype,
                                          )
 
-    creator.set_metadata('/application_data/spikedetekt', **params)
+    creator.set_metadata('/application_data/spikedetekt',
+                         **params)
+    creator.set_metadata('/application_data/klustakwik2',
+                         **prm.get('klustakwik2', {}))
 
     return kwik_path
