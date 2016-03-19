@@ -9,6 +9,7 @@
 import logging
 import numpy as np
 import os
+import os.path as op
 
 from pytest import yield_fixture
 
@@ -49,7 +50,9 @@ def chdir_tempdir():
 @yield_fixture(params=['null', 'artificial', 'real'])
 def raw_dataset(request):
     sample_rate = 20000
-    params = _read_python('klusta/traces/default_settings.py')['spikedetekt']
+    curdir = op.realpath(op.dirname(__file__))
+    path = op.join(curdir, 'traces/default_settings.py')
+    params = _read_python(path)['spikedetekt']
     data_type = request.param
     if data_type == 'real':
         path = download_test_data('test-32ch-10s.dat')

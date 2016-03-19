@@ -17,7 +17,7 @@ from six.moves import zip
 
 from .h5 import open_h5
 from .mea import load_probe
-from .model import _DEFAULT_GROUPS, _spikedetekt_settings
+from .model import _DEFAULT_GROUPS
 from ..utils import _read_python, _unique, _dat_n_samples
 from .. import __version_git__
 
@@ -382,7 +382,9 @@ def create_kwik(prm_file=None, prm=None, kwik_path=None, overwrite=False,
     assert sample_rate > 0
 
     # Default SpikeDetekt parameters.
-    params = _spikedetekt_settings.copy()
+    curdir = op.realpath(op.dirname(__file__))
+    path = op.join(curdir, '../traces/default_settings.py')
+    params = _read_python(path)['spikedetekt']
     # Update with PRM and user parameters.
     if prm:
         params['experiment_name'] = prm.get('experiment_name',

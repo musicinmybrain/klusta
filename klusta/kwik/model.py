@@ -18,57 +18,11 @@ from six import string_types
 
 from ..traces.waveform import WaveformLoader, SpikeLoader
 from ..traces.filter import bandpass_filter, apply_filter
-from ..utils import _unique, _is_integer, _as_tuple
+from ..utils import _unique, _is_integer, _as_tuple, _read_python
 from .h5 import open_h5, File, _mmap_h5
 from .mea import MEA
 
 logger = logging.getLogger(__name__)
-
-
-# -----------------------------------------------------------------------------
-# Default settings used in the Kwik format
-# -----------------------------------------------------------------------------
-
-_spikedetekt_settings = {
-
-    'raw_data_files': [],
-    'n_channels': None,
-    'dtype': None,
-    'sample_rate': None,
-
-    'filter_low': 500.,
-    'filter_high_factor': 0.95 * .5,  # will be multiplied by the sample rate
-    'filter_butter_order': 3,
-
-    # Data chunks.
-    'chunk_size_seconds': 1.,
-    'chunk_overlap_seconds': .015,
-
-    # Threshold.
-    'n_excerpts': 50,
-    'excerpt_size_seconds': 1.,
-    'use_single_threshold': True,
-    'threshold_strong_std_factor': 4.5,
-    'threshold_weak_std_factor': 2.,
-    'detect_spikes': 'negative',
-
-    # Connected components.
-    'connected_component_join_size': 1,
-
-    # Spike extractions.
-    'extract_s_before': 10,
-    'extract_s_after': 10,
-    'weight_power': 2,
-
-    # Features.
-    'n_features_per_channel': 3,
-    'pca_n_waveforms_max': 10000,
-
-    # Waveform filtering in GUI.
-    'waveform_filter': True,
-    'waveform_dc_offset': None,
-    'waveform_scale_factor': None,
-}
 
 
 # -----------------------------------------------------------------------------
@@ -734,8 +688,11 @@ class KwikModel(object):
         params = {}
         for attr in self._kwik.attrs(path):
             params[attr] = self._kwik.read_attr(path, attr)
-        # Make sure all params are there.
-        for name, default_value in _spikedetekt_settings.items():
+        # Load the default spikedetekt parameters.
+        curdir = op.realpath(op.dirname(__file__))
+        path = op.join(curdir, '../traces/default_settings.py')
+        dfs = _read_python(path)['spikedetekt']
+        for name, default_value in dfs.items():
             if name not in params:
                 params[name] = default_value
         self._metadata = params
