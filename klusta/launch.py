@@ -13,7 +13,7 @@ import shutil
 import numpy as np
 
 from .traces import SpikeDetekt
-from .klustakwik import KlustaKwik
+from .klustakwik import klustakwik
 from .utils import _ensure_dir_exists, _concatenate
 
 logger = logging.getLogger(__name__)
@@ -77,10 +77,14 @@ def detect(model, interval=None, **kwargs):
 
 
 def cluster(model, spike_ids=None, **kwargs):
+    """Return the spike_clusters and metadata.
 
+    Doesn't make any change to the model. The caller must add the clustering.
+
+    """
     # Setup the temporary directory.
     expdir = op.dirname(model.kwik_path)
-    kk_dir = op.join(expdir, '.klustakwik')
+    kk_dir = op.join(expdir, '.klustakwik2')
     _ensure_dir_exists(kk_dir)
 
     # Take KK's default parameters.
@@ -100,11 +104,6 @@ def cluster(model, spike_ids=None, **kwargs):
     else:
         spike_clusters_orig = model.spike_clusters.copy()
 
-    # Instantiate the KlustaKwik instance.
-    kk = KlustaKwik(**params)
-
-    # Save the current clustering in the Kwik file.
-    @kk.connect
     def on_iter(sc):
         # Update the original spike clusters.
         spike_clusters = spike_clusters_orig.copy()
@@ -118,21 +117,21 @@ def cluster(model, spike_ids=None, **kwargs):
 
     logger.info("Running KK...")
     # Run KK.
-    sc = kk.cluster(model=model, spike_ids=spike_ids)
+    sc, params = klustakwik(model=model, spike_ids=spike_ids,
+                            iter_callback=on_iter)
     logger.info("The automatic clustering process has finished.")
 
     # Save the results in the Kwik file.
     spike_clusters = spike_clusters_orig.copy()
     spike_clusters[spike_ids] = sc
 
-    # Add a new clustering and switch to it.
-    model.add_clustering('main', spike_clusters)
-    model.copy_clustering('main', 'original')
-
     # Set the new clustering metadata.
-    params = kk.params
-    params['version'] = kk.version
-    metadata = {'klustakwik_{}'.format(name): value
+    metadata = {'klustakwik2_{}'.format(name): value
                 for name, value in params.items()}
-    model.clustering_metadata.update(metadata)
-    return sc
+
+    # # Add a new clustering and switch to it.
+    # model.add_clustering('main', spike_clusters)
+    # model.copy_clustering('main', 'original')
+    # model.clustering_metadata.update(metadata)
+
+    return sc, metadata

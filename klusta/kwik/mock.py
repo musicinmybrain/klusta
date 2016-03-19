@@ -52,6 +52,21 @@ def artificial_correlograms(n_clusters, n_samples):
     return nr.uniform(size=(n_clusters, n_clusters, n_samples))
 
 
+def mock_prm(dat_path):
+    return dict(
+        prb_file='1x32_buzsaki',
+        traces=dict(
+            raw_data_files=[dat_path],
+            voltage_gain=10.,
+            sample_rate=20000,
+            n_channels=32,
+            dtype='int16',
+        ),
+        spikedetekt={},
+        klustakwik2={},
+    )
+
+
 #------------------------------------------------------------------------------
 # Mock Kwik file
 #------------------------------------------------------------------------------

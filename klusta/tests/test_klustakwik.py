@@ -12,7 +12,7 @@ from numpy.testing import assert_array_almost_equal as aae
 
 from ..kwik.model import KwikModel
 from ..kwik.mock import create_mock_kwik
-from ..klustakwik import cluster, sparsify_features_masks
+from ..klustakwik import klustakwik, sparsify_features_masks
 
 
 #------------------------------------------------------------------------------
@@ -110,9 +110,9 @@ def test_cluster(tempdir):
                                 n_samples_traces=5000)
     model = KwikModel(filename)
 
-    spike_clusters = cluster(model, num_starting_clusters=10)
+    spike_clusters, params = klustakwik(model, num_starting_clusters=10)
     assert len(spike_clusters) == n_spikes
 
-    spike_clusters = cluster(model, num_starting_clusters=10,
-                             spike_ids=range(100))
+    spike_clusters, params = klustakwik(model, num_starting_clusters=10,
+                                        spike_ids=range(100))
     assert len(spike_clusters) == 100

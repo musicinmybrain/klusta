@@ -366,10 +366,10 @@ class KwikCreator(object):
                                        )
 
 
-def create_kwik(prm_file=None, kwik_path=None, overwrite=False,
+def create_kwik(prm_file=None, prm=None, kwik_path=None, overwrite=False,
                 probe=None, **kwargs):
     """Create a new Kwik dataset from a PRM file."""
-    prm = _read_python(prm_file) if prm_file else {}
+    prm = prm or (_read_python(prm_file) if prm_file else {})
 
     if prm:
         assert 'spikedetekt' in prm
@@ -385,7 +385,8 @@ def create_kwik(prm_file=None, kwik_path=None, overwrite=False,
     params = _spikedetekt_settings.copy()
     # Update with PRM and user parameters.
     if prm:
-        params['experiment_name'] = prm['experiment_name']
+        params['experiment_name'] = prm.get('experiment_name',
+                                            op.basename(kwik_path))
         params['prb_file'] = prm['prb_file']
         params.update(prm['spikedetekt'])
         params.update(prm['klustakwik2'])
@@ -422,6 +423,7 @@ def create_kwik(prm_file=None, kwik_path=None, overwrite=False,
         else:
             raw_data_files = [raw_data_files]
     if isinstance(raw_data_files, list) and len(raw_data_files):
+        # TODO
         if len(raw_data_files) > 1:
             raise NotImplementedError("There is no support for "
                                       "multiple .dat files yet.")

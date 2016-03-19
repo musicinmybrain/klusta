@@ -76,18 +76,17 @@ def sparsify_features_masks(features, masks, chunk_size=10000):
                          )
 
 
-def cluster(model=None,
-            spike_ids=None,
-            features=None,
-            masks=None,
-            **kwargs
-            ):
+def klustakwik(model=None,
+               spike_ids=None,
+               features=None,
+               masks=None,
+               iter_callback=None,
+               **kwargs
+               ):
     """Run the clustering algorithm on the model, or on any features
     and masks.
 
     Return the `spike_clusters` assignements.
-
-    Emit the `iter` event at every KlustaKwik iteration.
 
     """
     # Get the features and masks.
@@ -105,7 +104,7 @@ def cluster(model=None,
     data = sparsify_features_masks(features, masks)
     data = data.to_sparse_data()
     # Run KK.
-    from klustakwik2 import KK
+    from klustakwik2 import KK, __version__
     kk = KK(data, **kwargs)
 
     @kk.register_callback
@@ -113,8 +112,11 @@ def cluster(model=None,
         # Skip split iterations.
         if _.name != '':
             return
-        # TODO: iter
+        if iter_callback:
+            iter_callback(kk.clusters)
 
     kk.cluster_mask_starts()
     spike_clusters = kk.clusters
-    return spike_clusters
+    params = kk.params
+    params['version'] = __version__
+    return spike_clusters, params
