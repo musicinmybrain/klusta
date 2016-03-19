@@ -6,6 +6,7 @@
 # Imports
 #------------------------------------------------------------------------------
 
+import os
 import os.path as op
 import logging
 
@@ -384,10 +385,13 @@ class KwikCreator(object):
                                        )
 
 
-def create_kwik(prm_file=None, prm=None,
+def create_kwik(prm_file=None,
+                prm=None,
                 kwik_path=None,
                 output_dir=None,
-                probe=None, **kwargs):
+                probe=None,
+                overwrite=False,
+                **kwargs):
     """Create a new Kwik dataset from a PRM file."""
     prm = prm or (_read_python(prm_file) if prm_file else {})
     if prm:
@@ -399,23 +403,33 @@ def create_kwik(prm_file=None, prm=None,
         sample_rate = kwargs['sample_rate']
     assert sample_rate > 0
 
-    # Default SpikeDetekt parameters.
-    curdir = op.realpath(op.dirname(__file__))
-
     # Check output dir.
-    output_dir = output_dir or curdir
-    assert output_dir
-    _ensure_dir_exists(output_dir)
+    output_dir = output_dir or ''
+    if output_dir:
+        _ensure_dir_exists(output_dir)
 
     # Ensure kwik path.
     kwik_path = kwik_path or op.join(output_dir,
                                      prm['experiment_name'] + '.kwik')
+    kwik_path = op.realpath(kwik_path)
     assert kwik_path
+
+    # Overwrite the kwik file if necessary.
+    kwx_path = op.splitext(kwik_path)[0] + '.kwx'
+    if op.exists(kwik_path):
+        if overwrite:
+            os.remove(kwik_path)
+            os.remove(kwx_path)
+        else:
+            raise IOError("The `.kwik` file already exists. Please use "
+                          "the `--overwrite` option.")
 
     # Ensure experiment name.
     experiment_name = op.basename(kwik_path)
     assert experiment_name
 
+    # Default SpikeDetekt parameters.
+    curdir = op.realpath(op.dirname(__file__))
     path = op.join(curdir, '../traces/default_settings.py')
     params = _read_python(path)['spikedetekt']
     # Update with PRM and user parameters.
@@ -433,6 +447,7 @@ def create_kwik(prm_file=None, prm=None,
 
     # KwikCreator.
     creator = KwikCreator(kwik_path)
+    logger.info("Using kwik file `%s`.", kwik_path)
     # Create an empty kwik file if it doesn't exist yet.
     if not op.exists(kwik_path):
         creator.create_empty()

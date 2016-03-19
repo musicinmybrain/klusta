@@ -19,7 +19,7 @@ from .kwik.creator import create_kwik, KwikCreator
 from .kwik.model import KwikModel
 from .klustakwik import klustakwik
 from .utils import _ensure_dir_exists
-from .__init__ import __version_git__
+from .__init__ import __version_git__, add_default_handler
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +129,7 @@ def klusta(prm_file,
            channel_group=None,
            detect_only=False,
            cluster_only=False,
+           overwrite=False,
            ):
     # Detection and/or clustering.
     do_detect = not cluster_only
@@ -142,7 +143,10 @@ def klusta(prm_file,
         assert 0 <= interval[0] < interval[1]
 
     # Ensure the kwik file exists. Doesn't overwrite it if it exists.
-    kwik_path = create_kwik(prm_file=prm_file, output_dir=output_dir)
+    kwik_path = create_kwik(prm_file=prm_file,
+                            output_dir=output_dir,
+                            overwrite=overwrite,
+                            )
 
     # Detection.
     if do_detect:
@@ -194,19 +198,37 @@ def klusta(prm_file,
                 type=click.Path(exists=True, file_okay=True, dir_okay=False),
                 )
 @click.option('--output-dir',
-              help='Output directory.')
+              type=click.Path(file_okay=False, dir_okay=True),
+              help='Output directory.',
+              )
 @click.option('--interval',
               type=click.Tuple([float, float]),
-              help='Interval in seconds, e.g. `--interval 0 2`.')
+              help='Interval in seconds, e.g. `--interval 0 2`.',
+              )
 @click.option('--channel-group',
               type=click.INT,
-              help='Channel group to cluster (all by default).')
+              help='Channel group to cluster (all by default).',
+              )
 @click.option('--detect-only',
               help='Only do spike detection.',
-              is_flag=True)
+              default=False,
+              is_flag=True,
+              )
 @click.option('--cluster-only',
               help='Only do automatic clustering.',
-              is_flag=True)
+              default=False,
+              is_flag=True,
+              )
+@click.option('--overwrite',
+              help='Overwrite the Kwik file.',
+              default=False,
+              is_flag=True,
+              )
+@click.option('--debug',
+              help='Use the DEBUG logging level.',
+              default=False,
+              is_flag=True,
+              )
 @click.version_option(version=__version_git__)
 @click.help_option()
 def main(*args, **kwargs):
@@ -224,4 +246,5 @@ def main(*args, **kwargs):
     * The PRB file: a Python file with the `.prb` extension, containing the layout of your probe.
 
     """  # noqa
+    add_default_handler('DEBUG' if kwargs.pop('debug', None) else 'INFO')
     return klusta(*args, **kwargs)
