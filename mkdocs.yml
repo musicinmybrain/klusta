@@ -1,0 +1,8 @@
+site_name: phy
+pages:
+- Quick start: 'index.md'
+- Data acquisition: 'data.md'
+- Probe parameters: 'probe.md'
+- Spike sorting parameters: 'params.md'
+- Spike sorting: 'klusta.md'
+theme: readthedocs
