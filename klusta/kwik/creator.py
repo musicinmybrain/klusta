@@ -6,7 +6,6 @@
 # Imports
 #------------------------------------------------------------------------------
 
-import os
 import os.path as op
 import logging
 
@@ -18,7 +17,9 @@ from six.moves import zip
 from .h5 import open_h5
 from .mea import load_probe
 from .model import _DEFAULT_GROUPS
-from ..utils import _read_python, _unique, _dat_n_samples, _concatenate
+from ..utils import (_read_python, _unique, _dat_n_samples, _concatenate,
+                     _ensure_dir_exists,
+                     )
 from .. import __version_git__
 
 logger = logging.getLogger(__name__)
@@ -383,11 +384,12 @@ class KwikCreator(object):
                                        )
 
 
-def create_kwik(prm_file=None, prm=None, kwik_path=None, overwrite=False,
+def create_kwik(prm_file=None, prm=None,
+                kwik_path=None,
+                output_dir=None,
                 probe=None, **kwargs):
     """Create a new Kwik dataset from a PRM file."""
     prm = prm or (_read_python(prm_file) if prm_file else {})
-
     if prm:
         assert 'spikedetekt' in prm
         assert 'traces' in prm
@@ -395,41 +397,45 @@ def create_kwik(prm_file=None, prm=None, kwik_path=None, overwrite=False,
 
     if 'sample_rate' in kwargs:
         sample_rate = kwargs['sample_rate']
-
     assert sample_rate > 0
 
     # Default SpikeDetekt parameters.
     curdir = op.realpath(op.dirname(__file__))
+
+    # Check output dir.
+    output_dir = output_dir or curdir
+    assert output_dir
+    _ensure_dir_exists(output_dir)
+
+    # Ensure kwik path.
+    kwik_path = kwik_path or op.join(output_dir,
+                                     prm['experiment_name'] + '.kwik')
+    assert kwik_path
+
+    # Ensure experiment name.
+    experiment_name = op.basename(kwik_path)
+    assert experiment_name
+
     path = op.join(curdir, '../traces/default_settings.py')
     params = _read_python(path)['spikedetekt']
     # Update with PRM and user parameters.
     if prm:
-        params['experiment_name'] = prm.get('experiment_name',
-                                            op.basename(kwik_path))
-        params['prb_file'] = prm['prb_file']
+        params['experiment_name'] = experiment_name
+        params['prb_file'] = prm.get('prb_file', None)
         params.update(prm['spikedetekt'])
         params.update(prm['klustakwik2'])
         params.update(prm['traces'])
     params.update(kwargs)
 
-    kwik_path = kwik_path or params['experiment_name'] + '.kwik'
-    kwx_path = op.splitext(kwik_path)[0] + '.kwx'
-    if op.exists(kwik_path):
-        if overwrite:
-            os.remove(kwik_path)
-            os.remove(kwx_path)
-        else:
-            raise IOError("The `.kwik` file already exists. Please use "
-                          "the `--overwrite` option.")
-
     # Ensure the probe file exists if it is required.
-    if probe is None:
-        probe = load_probe(params['prb_file'])
+    probe = probe or load_probe(params['prb_file'])
     assert probe
 
     # KwikCreator.
     creator = KwikCreator(kwik_path)
-    creator.create_empty()
+    # Create an empty kwik file if it doesn't exist yet.
+    if not op.exists(kwik_path):
+        creator.create_empty()
     creator.set_probe(probe)
 
     # Add the recordings.
