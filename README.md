@@ -26,7 +26,7 @@ You will need a GUI to visualize the spike sorting results. **No GUI is included
 We have developed two GUI programs:
 
 * [**KlustaViewa**](https://github.com/klusta-team/klustaviewa): scales up to 64 channels, well-tested by many users over the last few years.
-* **phy KwikGUI**: scales to hundreds or thousands of channels, still experimental. We will add a link when this GUI is ready (later in 2016).
+* **phy KwikGUI**: scales to hundreds/thousands of channels, still experimental. We will add a link when this GUI is ready (later in 2016).
 
 
 ## Technical details
