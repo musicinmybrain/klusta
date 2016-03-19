@@ -104,7 +104,7 @@ class ArrayStore(object):
     def load(self, **kwargs):
         path = self._path(**kwargs)
         if not op.exists(path):
-            logger.debug("File `{}` doesn't exist.".format(path))
+            logger.log(5, "File `{}` doesn't exist.".format(path))
             return
         # Multiple arrays:
         # debug("Load {}.".format(path))

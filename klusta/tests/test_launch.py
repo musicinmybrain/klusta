@@ -7,13 +7,12 @@
 #------------------------------------------------------------------------------
 
 import os.path as op
+from textwrap import dedent
 
 from pytest import fixture
 
-from ..launch import detect, cluster
+from ..launch import klusta
 from ..datasets import download_test_data
-from ..kwik.creator import create_kwik, KwikCreator
-from ..kwik.mock import mock_prm
 from ..kwik.model import KwikModel
 
 
@@ -22,42 +21,96 @@ from ..kwik.model import KwikModel
 #------------------------------------------------------------------------------
 
 @fixture
-def kwik_path(tempdir):
-    # Create empty kwik from mock PRM, PRB, and test dat file.
+def prm_path_real(tempdir):
     dat_path = download_test_data('test-32ch-10s.dat')
-    kwik_path = op.join(tempdir, 'test-32ch-10s.kwik')
-    prm = mock_prm(dat_path)
-    create_kwik(prm=prm, kwik_path=kwik_path)
-    return kwik_path
+    prm = dedent("""
+        prb_file = '1x32_buzsaki'
+        experiment_name = 'test_real'
+        traces = dict(
+            raw_data_files = ["%s"],
+            voltage_gain = 10.,
+            sample_rate = 20000,
+            n_channels = 32,
+            dtype = 'int16',
+        )
+        spikedetekt = {}
+        klustakwik2 = {}
+        """ % dat_path)
+    path = op.join(tempdir, 'params.prm')
+    with open(path, 'w') as f:
+        f.write(prm)
+    return path
+
+
+@fixture
+def prm_path_shanks(tempdir):
+    dat_path = download_test_data('test-32ch-10s.dat')
+
+    # Create the PRB.
+    prb = dedent("""
+                 channel_groups = {
+                    0: {'channels': [0, 1],
+                        'graph': [[0, 1]],
+                        },
+                    1: {'channels': [2, 3],
+                        'graph': [[2, 3]],
+                        }
+                 }
+                 """)
+    path = op.join(tempdir, 'probe.prb')
+    with open(path, 'w') as f:
+        f.write(prb)
+
+    # Create the PRM.
+    prm = dedent("""
+        prb_file = '%s'
+        experiment_name = 'test_shanks'
+        traces = dict(
+            raw_data_files = ["%s"],
+            sample_rate = 20000,
+            n_channels = 32,
+            dtype = 'int16',
+        )
+        spikedetekt = {}
+        klustakwik2 = dict(num_starting_clusters=20)
+        """ % (path, dat_path))
+    path = op.join(tempdir, 'params.prm')
+    with open(path, 'w') as f:
+        f.write(prm)
+
+    return path
 
 
 #------------------------------------------------------------------------------
 # Tests
 #------------------------------------------------------------------------------
 
-def test_launch(kwik_path):
-    creator = KwikCreator(kwik_path)
+def test_launch_shanks(tempdir, prm_path_shanks):
+    kwik_path = klusta(prm_path_shanks,
+                       output_dir=tempdir,
+                       )
 
-    # Detection.
     model = KwikModel(kwik_path)
-    out = detect(model, interval=(0, 1))
-    model.close()
 
-    # Add spikes in the kwik file.
-    creator.add_spikes_after_detection(out)
+    model.channel_group = 0
+    model.describe()
+    assert model.n_spikes > 0
+    assert model.n_clusters > 0
 
-    # Clustering.
-    model = KwikModel(kwik_path)
-    assert model.channel_group == 0
-    assert model.n_spikes >= 100
-    spike_clusters, metadata = cluster(model)
-    # Add a new clustering and switch to it.
-    model.add_clustering('main', spike_clusters)
-    model.copy_clustering('main', 'original')
-    model.clustering_metadata.update(metadata)
-    model.close()
+    model.channel_group = 1
+    model.describe()
+    assert model.n_spikes == 0
+    assert model.n_clusters == 0
+
+
+def test_launch_real(tempdir, prm_path_real):
+    kwik_path = klusta(prm_path_real,
+                       interval=(0., 1.),
+                       output_dir=tempdir,
+                       )
 
     # Check.
     model = KwikModel(kwik_path)
+    assert model.n_spikes >= 100
     assert model.n_clusters >= 5
     model.describe()

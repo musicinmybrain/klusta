@@ -14,6 +14,8 @@ import shutil
 import numpy as np
 
 from .traces import SpikeDetekt
+from .kwik.creator import create_kwik, KwikCreator
+from .kwik.model import KwikModel
 from .klustakwik import klustakwik
 from .utils import _ensure_dir_exists
 
@@ -65,6 +67,10 @@ def cluster(model, spike_ids=None, **kwargs):
     Doesn't make any change to the model. The caller must add the clustering.
 
     """
+    # Skip if no spikes.
+    if not model.n_spikes:
+        return np.array([], dtype=np.int32), {}
+
     # Setup the temporary directory.
     expdir = op.dirname(model.kwik_path)
     kk_dir = op.join(expdir, '.klustakwik2')
@@ -113,3 +119,52 @@ def cluster(model, spike_ids=None, **kwargs):
                 for name, value in params.items()}
 
     return sc, metadata
+
+
+def klusta(prm_file,
+           output_dir=None,
+           do_detect=True,
+           do_cluster=True,
+           interval=None,
+           channel_group=None):
+    # Ensure the kwik file exists. Doesn't overwrite it if it exists.
+    kwik_path = create_kwik(prm_file=prm_file, output_dir=output_dir)
+
+    # Detection.
+    if do_detect:
+        # NOTE: always detect on all shanks.
+        model = KwikModel(kwik_path)
+        out = detect(model, interval=interval)
+        model.close()
+
+        # Add the spikes to the kwik file.
+        creator = KwikCreator(kwik_path)
+        creator.add_spikes_after_detection(out)
+
+    # List of channel groups.
+    if channel_group is None:
+        channel_groups = out.groups
+    else:
+        channel_groups = [channel_group]
+
+    # Clustering.
+    if do_cluster:
+        # Cluster every channel group.
+        for channel_group in channel_groups:
+            model = KwikModel(kwik_path, channel_group=channel_group)
+            logger.info("Clustering group %d (%d spikes).",
+                        channel_group, model.n_spikes)
+            # Skip clustering if there are no spikes.
+            if not model.n_spikes:
+                continue
+            spike_clusters, metadata = cluster(model)
+            model.close()
+
+            # Add the results to the kwik file.
+            model = KwikModel(kwik_path, channel_group=channel_group)
+            model.add_clustering('main', spike_clusters)
+            model.copy_clustering('main', 'original')
+            model.clustering_metadata.update(metadata)
+            model.close()
+
+    return kwik_path
