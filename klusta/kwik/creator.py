@@ -18,7 +18,7 @@ from six.moves import zip
 from .h5 import open_h5
 from .mea import load_probe
 from .model import _DEFAULT_GROUPS
-from ..utils import _read_python, _unique, _dat_n_samples
+from ..utils import _read_python, _unique, _dat_n_samples, _concatenate
 from .. import __version_git__
 
 logger = logging.getLogger(__name__)
@@ -217,6 +217,23 @@ class KwikCreator(object):
                            for (fet, m) in zip(features, masks)
                            if fet is not None and m is not None)
                 _write_by_chunk(fm, fm_arrs)
+
+    def add_spikes_after_detection(self, out):
+        # Add the spikes in the `.kwik` and `.kwx` files.
+        for group in out.groups:
+            spike_samples = _concatenate(out.spike_samples[group])
+            self.add_spikes(group=group,
+                            spike_samples=spike_samples,
+                            spike_recordings=None,  # TODO
+                            masks=out.masks[group],
+                            features=out.features[group],
+                            n_channels=out.n_channels_per_group[group],
+                            n_features=out.n_features_per_channel,
+                            )
+            # sc = np.zeros(n_spikes, dtype=np.int32)
+            # model.creator.add_clustering(group=group,
+            #                              name='main',
+            #                              spike_clusters=sc)
 
     def add_recording(self, id=None, raw_path=None,
                       start_sample=None, sample_rate=None):

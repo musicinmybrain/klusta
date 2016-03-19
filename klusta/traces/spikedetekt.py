@@ -10,6 +10,7 @@ from collections import defaultdict
 import logging
 
 import numpy as np
+from tqdm import tqdm
 
 from ..utils import (Bunch,
                      get_excerpts,
@@ -90,12 +91,11 @@ def _cut_traces(traces, interval_samples):
     # Take a subset if necessary.
     if interval_samples is not None:
         start, end = interval_samples
-        assert start <= end
-        traces = traces[start:end, ...]
-        n_samples = traces.shape[0]
     else:
         start, end = 0, n_samples
     assert 0 <= start < end
+    traces = traces[start:end, ...]
+    n_samples = traces.shape[0]
     if start > 0:
         # TODO: add offset to the spike samples...
         raise NotImplementedError("Need to add `start` to the "
@@ -271,8 +271,8 @@ class SpikeDetekt(object):
             assert dead_channels.max() < traces_f.shape[1]
             weak[:, dead_channels] = 0
             strong[:, dead_channels] = 0
-        else:
-            logger.debug("No dead channels specified.")
+        # else:
+        #     logger.debug("No dead channels specified.")
         # Run the detection.
         detector = self._create_detector()
         return detector(weak_crossings=weak,
@@ -420,6 +420,8 @@ class SpikeDetekt(object):
                        spike_samples=self._store.spike_samples(),
                        masks=self._store.masks(),
                        features=self._store.features(),
+                       n_channels_per_group=self._n_channels_per_group,
+                       n_features_per_channel=self._n_features,
                        spike_counts=sc,
                        n_spikes_total=sc(),
                        n_spikes_per_group={group: sc(group=group)
@@ -463,7 +465,7 @@ class SpikeDetekt(object):
 
     def step_detect(self, traces=None, thresholds=None):
         n_samples, n_channels = traces.shape
-        # n_chunks = self.n_chunks(n_samples)
+        n_chunks = self.n_chunks(n_samples)
 
         # Pass 1: find the connected components and count the spikes.
         # self._pr.start_step('detect', n_chunks)
@@ -471,7 +473,8 @@ class SpikeDetekt(object):
         # Dictionary {chunk_key: components}.
         # Every chunk has a unique key: the `keep_start` integer.
         n_spikes_total = 0
-        for chunk in self.iter_chunks(n_samples):
+        for chunk in tqdm(self.iter_chunks(n_samples),
+                          desc='Detection', total=n_chunks, leave=True):
             chunk_data = data_chunk(traces, chunk.bounds, with_overlap=True)
 
             # Apply the filter.
@@ -492,6 +495,8 @@ class SpikeDetekt(object):
             # Report progress.
             n_spikes_chunk = len(components)
             n_spikes_total += n_spikes_chunk
+            logger.debug("Found %d spikes in chunk %d.", n_spikes_chunk,
+                         chunk.key)
             # self._pr.increment(n_spikes=n_spikes_chunk,
             #                    n_spikes_total=n_spikes_total)
 
@@ -538,8 +543,12 @@ class SpikeDetekt(object):
         # self._pr.start_step('extract', self.n_chunks(n_samples))
         # chunk_counts = defaultdict(dict)  # {group: {key: n_spikes}}.
         # n_spikes_total = 0
-        for chunk, split in self._iter_spikes(n_samples,
-                                              thresholds=thresholds):
+        for chunk, split in tqdm(self._iter_spikes(n_samples,
+                                                   thresholds=thresholds),
+                                 desc='Features',
+                                 total=self.n_chunks(n_samples),
+                                 leave=True,
+                                 ):
             # Delete filtered and components cache files.
             self._store.delete(name='filtered', chunk_key=chunk.key)
             self._store.delete(name='components', chunk_key=chunk.key)

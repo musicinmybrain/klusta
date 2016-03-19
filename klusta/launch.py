@@ -14,9 +14,8 @@ import shutil
 import numpy as np
 
 from .traces import SpikeDetekt
-from .kwik.creator import KwikCreator
 from .klustakwik import klustakwik
-from .utils import _ensure_dir_exists, _concatenate
+from .utils import _ensure_dir_exists
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +44,7 @@ def detect(model, interval=None, **kwargs):
     # Take the parameters in the Kwik file, coming from the PRM file.
     params = model.metadata
     params.update(kwargs)
-    # TODO: pretty print params.
+    # Pretty print params.
     p_params = pformat(params)
     logger.info("Parameters: %s", p_params)
 
@@ -57,26 +56,6 @@ def detect(model, interval=None, **kwargs):
     logger.debug("Running SpikeDetekt...")
     sd = SpikeDetekt(tempdir=sd_dir, **params)
     out = sd.run_serial(traces, interval_samples=interval_samples)
-    n_features = params['n_features_per_channel']
-
-    # Add the spikes in the `.kwik` and `.kwx` files.
-    creator = KwikCreator(model.kwik_path)
-    for group in out.groups:
-        spike_samples = _concatenate(out.spike_samples[group])
-        # n_spikes = len(spike_samples) if spike_samples is not None else 0
-        n_channels = sd._n_channels_per_group[group]
-        creator.add_spikes(group=group,
-                           spike_samples=spike_samples,
-                           spike_recordings=None,  # TODO
-                           masks=out.masks[group],
-                           features=out.features[group],
-                           n_channels=n_channels,
-                           n_features=n_features,
-                           )
-        # sc = np.zeros(n_spikes, dtype=np.int32)
-        # model.creator.add_clustering(group=group,
-        #                              name='main',
-        #                              spike_clusters=sc)
     return out
 
 
