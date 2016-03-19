@@ -550,8 +550,8 @@ class SpikeDetekt(object):
                                  leave=True,
                                  ):
             # Delete filtered and components cache files.
-            self._store.delete(name='filtered', chunk_key=chunk.key)
-            self._store.delete(name='components', chunk_key=chunk.key)
+            # self._store.delete(name='filtered', chunk_key=chunk.key)
+            # self._store.delete(name='components', chunk_key=chunk.key)
             # split: {group: {'spike_samples': ..., 'waveforms':, 'masks':}}
             for group, out in split.items():
                 out['features'] = self.features(out['waveforms'], pcs[group])
