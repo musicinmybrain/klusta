@@ -10,6 +10,7 @@ import logging
 import os.path as op
 from pprint import pformat
 import shutil
+import sys
 
 import click
 import numpy as np
@@ -246,5 +247,14 @@ def main(*args, **kwargs):
     * The PRB file: a Python file with the `.prb` extension, containing the layout of your probe.
 
     """  # noqa
-    add_default_handler('DEBUG' if kwargs.pop('debug', None) else 'INFO')
+
+    debug = kwargs.pop('debug', None)
+
+    # Hide the traceback unless DEBUG mode.
+    def exception_handler(exception_type, exception, traceback):
+        print("{}: {}".format(exception_type.__name__, exception))
+    if not debug:
+        sys.excepthook = exception_handler
+
+    add_default_handler('DEBUG' if debug else 'INFO')
     return klusta(*args, **kwargs)
