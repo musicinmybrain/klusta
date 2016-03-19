@@ -36,12 +36,12 @@ We have developed two GUI programs:
 
 ## Getting started
 
-You will find installation instructions and a quick start guide in the [documentation](http://klusta.readthedocs.org/en/latest/).
+You will find installation instructions and a quick start guide in the [documentation](http://klusta.readthedocs.org/en/latest/) (work in progress).
 
 
 ## Links
 
-* [Documentation](http://klusta.readthedocs.org/en/latest/)
+* [Documentation](http://klusta.readthedocs.org/en/latest/) (work in progress)
 * [Paper in Nature Neuroscience (April 2016)](http://www.nature.com/neuro/journal/vaop/ncurrent/full/nn.4268.html)
 * [Mailing list](https://groups.google.com/forum/#!forum/klustaviewas)
 * [Sample data repository](http://phy.cortexlab.net/data/) (work in progress)
