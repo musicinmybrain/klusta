@@ -10,6 +10,22 @@
 
 We are also working actively on more sophisticated algorithms that will scale to hundreds/thousands of channels. This work is being done within the [phy project](https://github.com/kwikteam/phy), which is still experimental at this point.
 
+## Overview
+
+**klusta** implements the following features:
+
+* **Kwik**: An HDF5-based file format that stores the results of a spike sorting session.
+* **Spike detection** (also known as SpikeDetekt): an algorithm designed for relatively large probes, based on a flood-fill algorithm in the adjacency graph formed by the recording sites in the probe.
+* **Automatic clustering** (also known as Masked KlustaKwik): an automatic clustering algorithm designed for high-dimensional structured datasets.
+
+## Technical details
+
+**klusta** is written in pure Python. The clustering code, written in Python and Cython, currently lives in [another repository](https://github.com/kwikteam/klustakwik2/).
+
+## Getting started
+
+You will find installation instructions and a quick start guide in the [documentation](http://klusta.readthedocs.org/en/latest/).
+
 ## Links
 
 * [Documentation](http://klusta.readthedocs.org/en/latest/)
