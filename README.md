@@ -11,3 +11,9 @@
 ## Links
 
 * [Documentation](http://klusta.readthedocs.org/en/latest/)
+* [Paper in Nature Neuroscience (April 2016)](http://www.nature.com/neuro/journal/vaop/ncurrent/full/nn.4268.html)
+* [Mailing list](https://groups.google.com/forum/#!forum/klustaviewas)
+
+## Credits
+
+**klusta** is developed by [Cyrille Rossant](http://cyrille.rossant.net), [Shabnam Kadir](https://iris.ucl.ac.uk/iris/browse/profile?upi=SKADI56), [Dan Goodman](http://thesamovar.net/), [Max Hunter](https://iris.ucl.ac.uk/iris/browse/profile?upi=MLDHU99), and [Kenneth Harris](https://iris.ucl.ac.uk/iris/browse/profile?upi=KDHAR02), in the [Cortexlab](https://www.ucl.ac.uk/cortexlab), University College London.
