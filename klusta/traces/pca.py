@@ -95,7 +95,7 @@ def _project_pcs(x, pcs):
     assert ns == ns_
     assert nc == nc_
 
-    x_proj = np.einsum('ijk,...jk->...ki', pcs, x)
+    x_proj = np.einsum('...ijk,...jk->...ki', pcs, x)
     assert x_proj.shape == (n, nc, nf)
     return x_proj
 
