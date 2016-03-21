@@ -81,7 +81,6 @@ def cluster(model, spike_ids=None, **kwargs):
 
     params = model.kk2_metadata
     params.update(kwargs)
-    print(params)
 
     # Original spike_clusters array.
     if model.spike_clusters is None:

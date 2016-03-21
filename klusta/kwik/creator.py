@@ -200,7 +200,7 @@ class KwikCreator(object):
             return f[...].reshape((-1, n_channels * n_features))
 
         def transform_m(m):
-            return np.repeat(m[...], 3, axis=1)
+            return np.repeat(m[...], n_features, axis=1)
 
         assert op.exists(self.kwx_path)
         with open_h5(self.kwx_path, 'a') as f:
