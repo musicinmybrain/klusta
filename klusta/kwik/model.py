@@ -406,6 +406,17 @@ def _open_h5_if_exists(kwik_path, file_type, mode=None):
 def _read_traces(kwik, dtype=None, n_channels=None):
     kwd_path = None
     dat_path = None
+
+    dtype = kwik.read_attr('/application_data/spikedetekt/', 'dtype', None)
+    if dtype:
+        dtype = np.dtype(dtype)
+
+    n_channels = kwik.read_attr('/application_data/spikedetekt/',
+                                'n_channels',
+                                None)
+    if n_channels:
+        n_channels = int(n_channels)
+
     if '/recordings' not in kwik:
         return (None, None)
     recordings = kwik.children('/recordings')
@@ -877,12 +888,13 @@ class KwikModel(object):
         self._clustering_metadata.update(metadata)
 
     def _load_traces(self):
-        n_channels = self._metadata.get('n_channels', None)
-        dtype = self._metadata.get('dtype', None)
-        dtype = np.dtype(dtype) if dtype else None
+        # n_channels = self._metadata.get('n_channels', None)
+        # dtype = self._metadata.get('dtype', None)
+        # dtype = np.dtype(dtype) if dtype else None
         traces, opened_files = _read_traces(self._kwik,
-                                            dtype=dtype,
-                                            n_channels=n_channels)
+                                            # dtype=dtype,
+                                            # n_channels=n_channels,
+                                            )
 
         if not traces:
             return

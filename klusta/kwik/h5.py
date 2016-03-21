@@ -184,7 +184,7 @@ class File(object):
     # Attributes
     #--------------------------------------------------------------------------
 
-    def read_attr(self, path, attr_name):
+    def read_attr(self, path, attr_name, default=False):
         """Read an attribute of an HDF5 group."""
         _check_hdf5_path(self._h5py_file, path)
         attrs = self._h5py_file[path].attrs
@@ -199,9 +199,10 @@ class File(object):
                 logger.debug("Unable to read attribute `%s` at `%s`.",
                              attr_name, path)
                 return
-        else:
+        elif default is False:
             raise KeyError("The attribute '{0:s}' ".format(attr_name) +
                            "at `{}` doesn't exist.".format(path))
+        return default
 
     def write_attr(self, path, attr_name, value):
         """Write an attribute of an HDF5 group."""
