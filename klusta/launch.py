@@ -136,9 +136,10 @@ def klusta(prm_file,
 
     # Parse the interval (pair of floats).
     # if isinstance(interval, six.string_types):
-    if interval:
-        # interval = tuple(map(float, interval.split(',')))
+    if interval and interval[0] is not None and interval[1] is not None:
         assert 0 <= interval[0] < interval[1]
+    else:
+        interval = None
 
     # Ensure the kwik file exists. Doesn't overwrite it if it exists.
     kwik_path = create_kwik(prm_file=prm_file,
@@ -203,6 +204,7 @@ def klusta(prm_file,
 @click.option('--interval',
               type=click.Tuple([float, float]),
               help='Interval in seconds, e.g. `--interval 0 2`.',
+              default=(None, None),
               )
 @click.option('--channel-group',
               type=click.INT,
