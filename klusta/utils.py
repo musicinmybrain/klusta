@@ -58,6 +58,31 @@ def _pad(arr, n, dir='right'):
         return out
 
 
+def _index_of(arr, lookup):
+    """Replace scalars in an array by their indices in a lookup table.
+
+    Implicitely assume that:
+
+    * All elements of arr and lookup are non-negative integers.
+    * All elements or arr belong to lookup.
+
+    This is not checked for performance reasons.
+
+    """
+    # Equivalent of np.digitize(arr, lookup) - 1, but much faster.
+    # TODO: assertions to disable in production for performance reasons.
+    # TODO: np.searchsorted(lookup, arr) is faster on small arrays with large
+    # values
+    lookup = np.asarray(lookup, dtype=np.int32)
+    m = (lookup.max() if len(lookup) else 0) + 1
+    tmp = np.zeros(m + 1, dtype=np.int)
+    # Ensure that -1 values are kept.
+    tmp[-1] = -1
+    if len(lookup):
+        tmp[lookup] = np.arange(len(lookup))
+    return tmp[arr]
+
+
 def _is_integer(x):
     return isinstance(x, integer_types + (np.generic,))
 
