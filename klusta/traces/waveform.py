@@ -335,11 +335,17 @@ class WaveformLoader(object):
         if isinstance(item, slice):
             raise NotImplementedError("Indexing with slices is not "
                                       "implemented yet.")
-        if not hasattr(item, '__len__'):
+        if not isinstance(item, (tuple, list, np.ndarray)):
             item = [item]
         # Ensure a list of time samples are being requested.
         spikes = np.asarray(item)
-        n_spikes = len(spikes)
+        try:
+            n_spikes = len(spikes)
+        except TypeError:
+            # HACK: handle the case where item is an unsized np.ndarray
+            # (weird sort of scalar).
+            spikes = np.asarray([item])
+            n_spikes = len(spikes)
         # Initialize the array.
         # TODO: int16
         shape = (n_spikes, self.n_samples_waveforms,
@@ -376,3 +382,6 @@ class SpikeLoader(object):
     def __getitem__(self, item):
         times = self._spike_samples[item]
         return self._waveforms[times]
+
+    def __len__(self):
+        return len(self._spike_samples)
