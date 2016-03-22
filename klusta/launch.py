@@ -128,6 +128,16 @@ def klusta(prm_file,
            cluster_only=False,
            overwrite=False,
            ):
+
+    if prm_file.endswith('.kwik'):
+        kwik_path = prm_file
+        logger.info("Call `klusta` on a PRM file to spikesort your data.")
+        if op.exists(kwik_path):
+            logger.info("Here is a description of `%s`:", kwik_path)
+            model = KwikModel(kwik_path)
+            model.describe()
+        return
+
     # Detection and/or clustering.
     do_detect = not cluster_only
     do_cluster = not detect_only
