@@ -1515,7 +1515,7 @@ class KwikModel(object):
         This is a regular Python dictionary.
 
         """
-        return {cluster: self.cluster_metadata.group(cluster)
+        return {cluster: self._cluster_metadata[cluster]
                 for cluster in self.cluster_ids}
 
     @property
