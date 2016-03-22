@@ -18,7 +18,7 @@ from .traces import SpikeDetekt
 from .kwik.creator import create_kwik, KwikCreator
 from .kwik.model import KwikModel
 from .klustakwik import klustakwik
-from .utils import _ensure_dir_exists
+from .utils import _ensure_dir_exists, _read_python
 from .__init__ import __version_git__, add_default_handler
 
 logger = logging.getLogger(__name__)
@@ -157,14 +157,20 @@ def klusta(prm_file,
             logger.info("Deleting `%s`.", sd_dir)
             shutil.rmtree(sd_dir)
 
-    # Ensure the kwik file exists. Doesn't overwrite it if it exists.
-    kwik_path = create_kwik(prm_file=prm_file,
-                            output_dir=output_dir,
-                            overwrite=overwrite,
-                            )
+    # Find the path to the kwik file.
+    prm = _read_python(prm_file) if prm_file else {}
+    output_dir = output_dir or ''
+    kwik_path = op.join(output_dir, prm['experiment_name'] + '.kwik')
 
     # Detection.
     if do_detect:
+
+        # Ensure the kwik file exists. Doesn't overwrite it if it exists.
+        create_kwik(prm_file=prm_file,
+                    output_dir=output_dir,
+                    overwrite=overwrite,
+                    )
+
         logger.info("Starting spike detection.")
         # NOTE: always detect on all shanks.
         model = KwikModel(kwik_path)
@@ -178,7 +184,10 @@ def klusta(prm_file,
 
     # List of channel groups.
     if channel_group is None:
-        channel_groups = out.groups
+        # If no channel group specified, find the list of all channel groups.
+        model = KwikModel(kwik_path)
+        channel_groups = model.channel_groups
+        model.close()
     else:
         channel_groups = [channel_group]
 

@@ -51,7 +51,7 @@ To get the latest version of the software, open a terminal and type:
 
 ```
 source activate klusta  # omit the `source` on Windows
-pip update klusta klustaviewa kwiklib
+pip install klusta klustaviewa kwiklib --upgrade
 ```
 
 ## Links
