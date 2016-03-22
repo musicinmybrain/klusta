@@ -15,18 +15,18 @@ We are also working actively on more sophisticated algorithms that will scale to
 **klusta** implements the following features:
 
 * **Kwik**: An HDF5-based file format that stores the results of a spike sorting session.
-* **Spike detection** (also known as SpikeDetekt): an algorithm designed for relatively large probes, based on a flood-fill algorithm in the adjacency graph formed by the recording sites in the probe.
+* **Spike detection** (also known as SpikeDetekt): an algorithm designed for probes containing tens of channels, based on a flood-fill algorithm in the adjacency graph formed by the recording sites in the probe.
 * **Automatic clustering** (also known as Masked KlustaKwik): an automatic clustering algorithm designed for high-dimensional structured datasets.
 
 
 ## GUI
 
-You will need a GUI to visualize the spike sorting results. **No GUI is included in this repository**.
+You will need a GUI to visualize the spike sorting results.
 
 We have developed two GUI programs:
 
-* [**KlustaViewa**](https://github.com/klusta-team/klustaviewa): scales up to 64 channels, well-tested by many users over the last few years.
-* **phy KwikGUI**: scales to hundreds/thousands of channels, still experimental. We will add a link when this GUI is ready (later in 2016).
+* [**KlustaViewa**](https://github.com/klusta-team/klustaviewa): scales up to 64 channels, well-tested by many users over the last few years. This will be installed if you follow the installation instructions below.
+* **phy KwikGUI**: newer project, scales to hundreds/thousands of channels, still experimental. We will add a link when this GUI is ready (probably April 2016).
 
 
 ## Technical details
@@ -38,19 +38,19 @@ We have developed two GUI programs:
 
 **Note**: the installation instructions will be simplified soon.
 
-The following instructions will install both klusta and the KlustaViewa GUI.
+The following instructions will install both **klusta** and the **KlustaViewa GUI**.
 
-1. Make sure that you have [miniconda](http://conda.pydata.org/miniconda.html) 64-bit for Python 3.5 installed on your system.
-2. [Download this file](https://raw.githubusercontent.com/kwikteam/klusta/master/installer/environment.yml) into a new directory where you want to install klusta and KlustaViewa.
-3. Open a terminal in that directory and type `conda env create -n klusta`.
-4. Done! Now, to use klusta and KlustaViewa, you have to first type `source activate klusta` in a terminal (omit the `source` on Windows), and then call `klusta` or `klustaviewa`.
+1. Make sure that you have [**miniconda**](http://conda.pydata.org/miniconda.html) 64-bit for Python 3.5 installed on your system.
+2. [**Download this file**](https://raw.githubusercontent.com/kwikteam/klusta/master/installer/environment.yml) into a new directory where you want to install klusta and KlustaViewa.
+3. **Open a terminal** in that directory and type `conda env create -n klusta`.
+4. **Done**! Now, to use klusta and KlustaViewa, you have to first type `source activate klusta` in a terminal (omit the `source` on Windows), and then call `klusta` or `klustaviewa`. See the documentation for more details.
 
 ### Updating the software
 
 To get the latest version of the software, open a terminal and type:
 
 ```
-source activate klusta
+source activate klusta  # omit the `source` on Windows
 pip update klusta klustaviewa kwiklib
 ```
 
