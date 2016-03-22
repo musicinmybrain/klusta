@@ -1,0 +1,36 @@
+name: klustasuite
+channels:
+  - kwikteam
+dependencies:
+  - python=2.7
+  - numpy=1.8
+  - pandas=0.12
+  - pytables=3.1
+  - scipy=0.14
+  - h5py=2.2
+  - qt=4.8.5=0
+  - pyqt=4.10.4=py27_0
+  - cython
+  - ipython
+  - matplotlib
+  - nose
+  - numexpr
+  - six
+  - traitlets
+
+  - klustakwik2
+
+  - pip:
+    - klusta
+
+    - galry
+    - qtools
+    - kwiklib
+    - klustaviewa
+
+    - click==6.3
+    - pyopengl
+    - pytest
+    - requests
+    - responses
+    - tqdm
