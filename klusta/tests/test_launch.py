@@ -34,7 +34,7 @@ def prm_path_real(tempdir):
             dtype = 'int16',
         )
         spikedetekt = {}
-        klustakwik2 = {}
+        klustakwik2 = dict(num_starting_clusters=10)
         """ % dat_path)
     path = op.join(tempdir, 'params.prm')
     with open(path, 'w') as f:
@@ -109,7 +109,7 @@ def test_launch_shanks(tempdir, prm_path_shanks):
 
 def test_launch_real(tempdir, prm_path_real):
     kwik_path = klusta(prm_path_real,
-                       interval=(0., 1.),
+                       interval=(0., 4.),
                        output_dir=tempdir,
                        )
 

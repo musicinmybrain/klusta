@@ -190,6 +190,7 @@ class SpikeDetektStore(ArrayStore):
         assert features.shape[0] == n
         assert masks.shape[0] == n
         spike_samples = spike_samples + spike_offset
+        assert np.all(np.diff(spike_samples) >= 0)
 
         self.store(group=group, chunk_key=chunk_key,
                    name='features', data=features)

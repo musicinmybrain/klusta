@@ -57,6 +57,7 @@ def _split_spikes(groups, idx=None, **arrs):
               }
     groups = np.asarray(groups)
     if idx is not None:
+        assert idx.dtype == np.bool
         n_spikes_chunk = np.sum(idx)
         # First, remove the overlapping bands.
         groups = groups[idx]
@@ -147,26 +148,6 @@ def _subtract_offsets(samples, offsets):
 #------------------------------------------------------------------------------
 # Spike detection class
 #------------------------------------------------------------------------------
-
-_spikes_message = "{n_spikes:d} spikes in chunk {value:d}/{value_max:d}."
-_progress_messages = {
-    'detect': ("Detecting spikes: {progress:.2f}%. " + _spikes_message,
-               "Spike detection complete: {n_spikes_total:d} " +
-               "spikes detected."),
-
-    'excerpt': ("Extracting waveforms subset for PCs: " +
-                "{progress:.2f}%. " + _spikes_message,
-                "Waveform subset extraction complete: " +
-                "{n_spikes_total} spikes."),
-
-    'pca': ("Performing PCA: {progress:.2f}%.",
-            "Principal waveform components computed."),
-
-    'extract': ("Extracting spikes: {progress:.2f}%. " + _spikes_message,
-                "Spike extraction complete: {n_spikes_total:d} " +
-                "spikes extracted."),
-}
-
 
 class SpikeDetekt(object):
     """Spike detection class.
@@ -320,7 +301,7 @@ class SpikeDetekt(object):
                         strong_crossings=strong)
 
     def extract_spikes(self, components, traces_f,
-                       thresholds=None, keep_bounds=None):
+                       thresholds=None, keep_bounds=None, s_start=None):
         """Extract spikes from connected components.
 
         Returns a split object.
@@ -335,6 +316,8 @@ class SpikeDetekt(object):
             The weak and strong thresholds.
         keep_bounds : tuple
             (keep_start, keep_end).
+        s_start : 0
+            Start of the chunk.
 
         """
         n_spikes = len(components)
@@ -379,10 +362,13 @@ class SpikeDetekt(object):
         masks = masks[idx]
 
         # Remove spikes in the overlapping bands.
-        # WARNING: add keep_start to spike_samples, because spike_samples
+        # WARNING: add s_start to spike_samples, because spike_samples
         # is relative to the start of the chunk.
+        # It is important to add s_start and not keep_start, because of
+        # edge effects between overlapping chunks.
+        s_start = s_start or 0
         (keep_start, keep_end) = keep_bounds
-        idx = _keep_spikes(samples + keep_start, (keep_start, keep_end))
+        idx = _keep_spikes(samples + s_start, (keep_start, keep_end))
 
         # Split the data according to the channel groups.
         split = _split_spikes(groups, idx=idx, spike_samples=samples,
@@ -522,7 +508,9 @@ class SpikeDetekt(object):
             # Extract the spikes from the chunk.
             split = self.extract_spikes(components, chunk_f,
                                         keep_bounds=chunk.keep_bounds,
-                                        thresholds=thresholds)
+                                        s_start=chunk.s_start,
+                                        thresholds=thresholds,
+                                        )
 
             yield chunk, split
 
@@ -631,10 +619,9 @@ class SpikeDetekt(object):
                 out['features'] = self.features(out['waveforms'], pcs[group])
                 # Checking that spikes are increasing.
                 spikes = out['spike_samples']
-                assert np.all(np.diff(spikes) >= 0)
                 self._store.append(group=group,
                                    chunk_key=chunk.key,
-                                   spike_samples=out['spike_samples'],
+                                   spike_samples=spikes,
                                    features=out['features'],
                                    masks=out['masks'],
                                    spike_offset=chunk.s_start,

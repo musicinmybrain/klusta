@@ -137,12 +137,11 @@ def test_spike_detect_real_data(tempdir, raw_dataset):
                      sample_rate=sample_rate,
                      **params)
     traces = raw_dataset.traces
-    n_samples = raw_dataset.n_samples
     npc = params['n_features_per_channel']
     # n_samples_w = params['extract_s_before'] + params['extract_s_after']
 
     # Run the detection.
-    out = sd.run_serial(traces, interval_samples=(0, n_samples))
+    out = sd.run_serial(traces, interval_samples=(0, 60000))
 
     channels = probe['channel_groups'][0]['channels']
     n_channels = len(channels)
