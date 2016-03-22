@@ -388,6 +388,13 @@ class SpikeDetekt(object):
         split = _split_spikes(groups, idx=idx, spike_samples=samples,
                               waveforms=waveforms, masks=masks)
         # split: {group: {'spike_samples': ..., 'waveforms':, 'masks':}}
+
+        # Assert that spike samples are increasing.
+        for group in split:
+            samples = split[group]['spike_samples']
+            if samples is not None:
+                assert np.all(np.diff(samples) >= 0)
+
         return split
 
     def waveform_pcs(self, waveforms, masks):
@@ -463,6 +470,9 @@ class SpikeDetekt(object):
         r = {}
         for group in self._groups:
             spikes = _concatenate(samples[group])
+            # Check increasing spikes.
+            if spikes is not None:
+                assert np.all(np.diff(spikes) >= 0)
             s[group], r[group] = _subtract_offsets(spikes,
                                                    self.recording_offsets)
 
@@ -530,7 +540,7 @@ class SpikeDetekt(object):
         # Every chunk has a unique key: the `keep_start` integer.
         n_spikes_total = 0
         for chunk in tqdm(self.iter_chunks(n_samples),
-                          desc='Detection', total=n_chunks, leave=True):
+                          desc='Detecting spikes', total=n_chunks, leave=True):
             chunk_data = data_chunk(traces, chunk.bounds, with_overlap=True)
 
             # Apply the filter.
@@ -561,13 +571,17 @@ class SpikeDetekt(object):
     def step_excerpt(self, n_samples=None,
                      n_spikes_total=None, thresholds=None):
         # self._pr.start_step('excerpt', self.n_chunks(n_samples))
-
+        n_chunks = self.n_chunks(n_samples)
         k = int(n_spikes_total / float(self._kwargs['pca_n_waveforms_max']))
         w_subset = defaultdict(list)
         m_subset = defaultdict(list)
         n_spikes_total = 0
-        for chunk, split in self._iter_spikes(n_samples, step_spikes=k,
-                                              thresholds=thresholds):
+        for chunk, split in tqdm(self._iter_spikes(n_samples, step_spikes=k,
+                                                   thresholds=thresholds),
+                                 desc='Extracting waveforms for PCA',
+                                 total=n_chunks,
+                                 leave=True,
+                                 ):
             n_spikes_chunk = 0
             for group, out in split.items():
                 w_subset[group].append(out['waveforms'])
@@ -587,7 +601,11 @@ class SpikeDetekt(object):
     def step_pcs(self, w_subset=None, m_subset=None):
         # self._pr.start_step('pca', len(self._groups))
         pcs = {}
-        for group in self._groups:
+        for group in tqdm(self._groups,
+                          desc='Performing PCA',
+                          total=len(self._groups),
+                          leave=True,
+                          ):
             # Perform PCA and return the components.
             pcs[group] = self.waveform_pcs(w_subset[group],
                                            m_subset[group])
@@ -601,7 +619,7 @@ class SpikeDetekt(object):
         # n_spikes_total = 0
         for chunk, split in tqdm(self._iter_spikes(n_samples,
                                                    thresholds=thresholds),
-                                 desc='Features',
+                                 desc='Computing features',
                                  total=self.n_chunks(n_samples),
                                  leave=True,
                                  ):
@@ -611,6 +629,9 @@ class SpikeDetekt(object):
             # split: {group: {'spike_samples': ..., 'waveforms':, 'masks':}}
             for group, out in split.items():
                 out['features'] = self.features(out['waveforms'], pcs[group])
+                # Checking that spikes are increasing.
+                spikes = out['spike_samples']
+                assert np.all(np.diff(spikes) >= 0)
                 self._store.append(group=group,
                                    chunk_key=chunk.key,
                                    spike_samples=out['spike_samples'],

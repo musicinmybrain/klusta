@@ -150,6 +150,13 @@ def klusta(prm_file,
     else:
         interval = None
 
+    # Delete the SpikeDetekt cache if overwriting the files.
+    if overwrite:
+        sd_dir = op.join(output_dir or '', '.spikedetekt')
+        if op.exists(sd_dir):
+            logger.info("Deleting `%s`.", sd_dir)
+            shutil.rmtree(sd_dir)
+
     # Ensure the kwik file exists. Doesn't overwrite it if it exists.
     kwik_path = create_kwik(prm_file=prm_file,
                             output_dir=output_dir,
