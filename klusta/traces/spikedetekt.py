@@ -528,7 +528,8 @@ class SpikeDetekt(object):
         # Every chunk has a unique key: the `keep_start` integer.
         n_spikes_total = 0
         for chunk in tqdm(self.iter_chunks(n_samples),
-                          desc='Detecting spikes', total=n_chunks, leave=True):
+                          desc='Detecting spikes'.ljust(24),
+                          total=n_chunks, leave=True):
             chunk_data = data_chunk(traces, chunk.bounds, with_overlap=True)
 
             # Apply the filter.
@@ -566,7 +567,7 @@ class SpikeDetekt(object):
         n_spikes_total = 0
         for chunk, split in tqdm(self._iter_spikes(n_samples, step_spikes=k,
                                                    thresholds=thresholds),
-                                 desc='Extracting waveforms for PCA',
+                                 desc='Extracting waveforms'.ljust(24),
                                  total=n_chunks,
                                  leave=True,
                                  ):
@@ -590,7 +591,7 @@ class SpikeDetekt(object):
         # self._pr.start_step('pca', len(self._groups))
         pcs = {}
         for group in tqdm(self._groups,
-                          desc='Performing PCA',
+                          desc='Performing PCA'.ljust(24),
                           total=len(self._groups),
                           leave=True,
                           ):
@@ -607,7 +608,7 @@ class SpikeDetekt(object):
         # n_spikes_total = 0
         for chunk, split in tqdm(self._iter_spikes(n_samples,
                                                    thresholds=thresholds),
-                                 desc='Computing features',
+                                 desc='Computing features'.ljust(24),
                                  total=self.n_chunks(n_samples),
                                  leave=True,
                                  ):
