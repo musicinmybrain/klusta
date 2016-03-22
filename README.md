@@ -34,10 +34,25 @@ We have developed two GUI programs:
 **klusta** is written in pure Python. The clustering code, written in Python and Cython, currently lives in [another repository](https://github.com/kwikteam/klustakwik2/).
 
 
-## Getting started
+## Quick install guide
 
-You will find installation instructions and a quick start guide in the [documentation](http://klusta.readthedocs.org/en/latest/) (work in progress).
+**Note**: the installation instructions will be simplified soon.
 
+The following instructions will install both klusta and the KlustaViewa GUI.
+
+1. Make sure that you have [miniconda](http://conda.pydata.org/miniconda.html) 64-bit for Python 3.5 installed on your system.
+2. [Download this file](https://raw.githubusercontent.com/kwikteam/klusta/master/installer/environment.yml) into a new directory where you want to install klusta and KlustaViewa.
+3. Open a terminal in that directory and type `conda env create -n klusta`.
+4. Done! Now, to use klusta and KlustaViewa, you have to first type `source activate klusta` in a terminal (omit the `source` on Windows), and then call `klusta` or `klustaviewa`.
+
+### Updating the software
+
+To get the latest version of the software, open a terminal and type:
+
+```
+source activate klusta
+pip update klusta klustaviewa kwiklib
+```
 
 ## Links
 
