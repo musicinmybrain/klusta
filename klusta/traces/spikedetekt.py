@@ -103,6 +103,47 @@ def _cut_traces(traces, interval_samples):
     return traces, start
 
 
+def _subtract_offsets(samples, offsets):
+    """Subtract the recording offsets from spike samples.
+
+    Return the subtracted spike samples and the spike_recordings array.
+
+    """
+    if samples is None:
+        return None, None
+    assert isinstance(samples, (list, np.ndarray))
+    samples = np.asarray(samples).copy()
+    assert len(offsets) >= 2
+    assert offsets[0] == 0
+    assert offsets[-1] >= samples[-1]
+    n = len(offsets) - 1
+
+    # Find where to insert the offsets in the spike samples.
+    ind = np.searchsorted(samples, offsets)
+    assert ind[0] == 0
+    assert len(ind) == n + 1
+
+    spike_recordings = np.zeros(len(samples), dtype=np.int32)
+
+    # Loop over all recordings.
+    for rec in range(n):
+        # Start of the current recording.
+        start_rec = offsets[rec]
+        # Spike indices of the first spikes in every recording.
+        i, j = ind[rec], ind[rec + 1]
+        # Ensure that the selected spikes belong to the current recording.
+        if i < len(samples) - 1:
+            assert start_rec <= samples[i]
+        # Subtract the current recording offset to the selected spikes.
+        samples[i:j] -= start_rec
+        # Create the spike_recordings array.
+        spike_recordings[i:j] = rec
+        assert np.all(samples[i:j] >= 0)
+        assert np.all(samples[i:j] <= (offsets[rec + 1] - start_rec))
+
+    return samples, spike_recordings
+
+
 #------------------------------------------------------------------------------
 # Spike detection class
 #------------------------------------------------------------------------------
@@ -414,10 +455,22 @@ class SpikeDetekt(object):
         """Bunch of values to be returned by the algorithm."""
         sc = self._store.spike_counts
         chunk_keys = self._store.chunk_keys
+
+        # NOTE: deal with multiple recordings.
+        samples = self._store.spike_samples()
+
+        s = {}
+        r = {}
+        for group in self._groups:
+            spikes = _concatenate(samples[group])
+            s[group], r[group] = _subtract_offsets(spikes,
+                                                   self.recording_offsets)
+
         output = Bunch(groups=self._groups,
                        n_chunks=len(chunk_keys),
                        chunk_keys=chunk_keys,
-                       spike_samples=self._store.spike_samples(),
+                       spike_samples=s,  # dict
+                       recordings=r,  # dict
                        masks=self._store.masks(),
                        features=self._store.features(),
                        n_channels_per_group=self._n_channels_per_group,
@@ -466,6 +519,9 @@ class SpikeDetekt(object):
     def step_detect(self, traces=None, thresholds=None):
         n_samples, n_channels = traces.shape
         n_chunks = self.n_chunks(n_samples)
+
+        # Use the recording offsets when dealing with multiple recordings.
+        self.recording_offsets = getattr(traces, 'offsets', [0, len(traces)])
 
         # Pass 1: find the connected components and count the spikes.
         # self._pr.start_step('detect', n_chunks)

@@ -10,12 +10,31 @@ import numpy as np
 from numpy.testing import assert_equal as ae
 from pytest import mark
 
-from ..spikedetekt import (SpikeDetekt, _split_spikes, _concat, _concatenate)
+from ..spikedetekt import (SpikeDetekt,
+                           _split_spikes,
+                           _concat,
+                           _concatenate,
+                           _subtract_offsets,
+                           )
 
 
 #------------------------------------------------------------------------------
 # Tests spike detection
 #------------------------------------------------------------------------------
+
+def test_subtract_offsets():
+    samples = [2, 3, 5, 7, 11]
+
+    offsets = [0, 20]
+    s, r = _subtract_offsets(samples, offsets)
+    ae(s, samples)
+    ae(r, np.zeros(len(samples)))
+
+    offsets = [0, 5, 10, 15, 20]
+    s, r = _subtract_offsets(samples, offsets)
+    ae(s, [2, 3, 0, 2, 1])
+    ae(r, [0, 0, 1, 1, 2])
+
 
 def test_split_spikes():
     groups = np.zeros(10, dtype=np.int)
