@@ -11,4 +11,5 @@ dependencies:
   - cython
   - click
   - pip:
+    - klustakwik2
     - tqdm
