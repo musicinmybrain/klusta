@@ -459,10 +459,6 @@ def create_kwik(prm_file=None,
         else:
             raw_data_files = [raw_data_files]
     if isinstance(raw_data_files, list) and len(raw_data_files):
-        # TODO
-        if len(raw_data_files) > 1:
-            raise NotImplementedError("There is no support for "
-                                      "multiple .dat files yet.")
         # The dtype must be a string so that it can be serialized in HDF5.
         if not params.get('dtype', None):
             logger.warn("The `dtype` parameter is mandatory. Using a "

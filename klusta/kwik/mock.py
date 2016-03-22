@@ -56,13 +56,15 @@ def mock_prm(dat_path):
     return dict(
         prb_file='1x32_buzsaki',
         traces=dict(
-            raw_data_files=[dat_path],
+            raw_data_files=[dat_path, dat_path],
             voltage_gain=10.,
             sample_rate=20000,
             n_channels=32,
             dtype='int16',
         ),
-        spikedetekt={},
+        spikedetekt={
+            'n_features_per_channel': 4,
+        },
         klustakwik2={},
     )
 
