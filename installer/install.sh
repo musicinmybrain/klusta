@@ -1,1 +1,1 @@
-conda env create -n klustatest --force
+conda env create -n klusta3 --force
