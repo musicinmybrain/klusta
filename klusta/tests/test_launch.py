@@ -116,5 +116,5 @@ def test_launch_real(tempdir, prm_path_real):
     # Check.
     model = KwikModel(kwik_path)
     assert model.n_spikes >= 100
-    assert model.n_clusters >= 5
+    assert model.n_clusters >= 2
     model.describe()
