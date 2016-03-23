@@ -6,7 +6,7 @@
 [![PyPI release](https://img.shields.io/pypi/v/klusta.svg)](https://pypi.python.org/pypi/klusta)
 [![GitHub release](https://img.shields.io/github/release/kwikteam/klusta.svg)](https://github.com/kwikteam/klusta/releases/latest)
 
-[**klusta**](https://github.com/kwikteam/klusta) is an open source automatic spike sorting package for multielectrode neurophysiological recordings that scales to probes with up to 64 interdependent channels.
+[**klusta**](https://github.com/kwikteam/klusta) is an open source package for automatic spike sorting of multielectrode neurophysiological recordings made with probes containing up to a few dozens of sites.
 
 We are also working actively on more sophisticated algorithms that will scale to hundreds/thousands of channels. This work is being done within the [phy project](https://github.com/kwikteam/phy), which is still experimental at this point.
 
@@ -23,10 +23,12 @@ We are also working actively on more sophisticated algorithms that will scale to
 
 You will need a GUI to visualize the spike sorting results.
 
-We have developed two GUI programs:
+We have developed two GUI programs with the same features:
 
-* [**KlustaViewa**](https://github.com/klusta-team/klustaviewa): scales up to 64 channels, well-tested by many users over the last few years. This will be installed if you follow the installation instructions below.
-* **phy KwikGUI**: newer project, scales to hundreds/thousands of channels, still experimental. We will add a link when this GUI is ready (probably April 2016).
+* **KlustaViewa**: older project, but widely used. **This will be automatically installed if you follow the installation instructions below.**
+* **phy KwikGUI**: newer project, scales to hundreds/thousands of channels, still experimental. You'll need to install [phy](https://github.com/kwikteam/phy) and [phy-contrib](https://github.com/kwikteam/phy-contrib) if you want to try the development version.
+
+Both GUIs work with the same **Kwik** format.
 
 
 ## Technical details
