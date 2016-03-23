@@ -61,3 +61,24 @@ Spikes                  1653
 Clusters                18
 Duration                10s
 ```
+
+
+## Using the GUI
+
+You can use one of the two GUIs we have developed to inspect and refine the results manually.
+
+### With KlustaViewa
+
+Type the following:
+
+```bash
+klustaviewa hybrid_10sec.kwik
+```
+
+### With the phy KwikGUI
+
+Type the following:
+
+```bash
+phy kwik-gui hybrid_10sec.kwik
+```
