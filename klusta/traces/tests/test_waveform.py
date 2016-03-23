@@ -8,6 +8,7 @@
 
 import numpy as np
 from numpy.testing import assert_array_equal as ae
+from numpy.testing import assert_allclose as ac
 import numpy.random as npr
 from pytest import raises
 
@@ -95,7 +96,7 @@ def test_extract_simple():
     assert s_f == s
     assert np.all(groups == 0)
     ae(masks_f, masks)
-    ae(wave_f, wave_a)
+    ac(wave_f, wave_a)
 
     # Tests with a different order.
     we = WaveformExtractor(extract_before=3,
@@ -108,7 +109,7 @@ def test_extract_simple():
     assert np.all(groups == 0)
     assert s_f == s_f_o
     assert np.allclose(wave_f[:, [1, 0, 3]], wave_f_o)
-    ae(masks_f_o, [1., 0.5, 0.])
+    ac(masks_f_o, [1., 0.5, 0.])
 
 
 #------------------------------------------------------------------------------

@@ -27,7 +27,7 @@ def prm_path_real(tempdir):
         prb_file = '1x32_buzsaki'
         experiment_name = 'test_real'
         traces = dict(
-            raw_data_files = ["%s"],
+            raw_data_files = [r"%s"],
             voltage_gain = 10.,
             sample_rate = 20000,
             n_channels = 32,
@@ -63,10 +63,10 @@ def prm_path_shanks(tempdir):
 
     # Create the PRM.
     prm = dedent("""
-        prb_file = '%s'
+        prb_file = r"%s"
         experiment_name = 'test_shanks'
         traces = dict(
-            raw_data_files = ["%s"],
+            raw_data_files = [r"%s"],
             sample_rate = 20000,
             n_channels = 32,
             dtype = 'int16',
