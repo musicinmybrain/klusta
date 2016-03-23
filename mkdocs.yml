@@ -1,6 +1,6 @@
 site_name: klusta
 pages:
-- Quick start: 'index.md'
+- Home: 'index.md'
 - Spike sorting: 'sorting.md'
 - Kwik format: 'kwik.md'
 theme: readthedocs
