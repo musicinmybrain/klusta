@@ -27,20 +27,12 @@ from .pca import PCA
 from .store import SpikeDetektStore
 from .waveform import WaveformExtractor
 
-logger = logging.getLogger('__main__')
+logger = logging.getLogger(__name__)
 
 
 #------------------------------------------------------------------------------
-# Spike detection class
+# Utils
 #------------------------------------------------------------------------------
-
-def _find_dead_channels(channels_per_group, n_channels):
-    all_channels = sorted([item for sublist in channels_per_group.values()
-                           for item in sublist])
-    dead = np.setdiff1d(np.arange(n_channels), all_channels)
-    logger.debug("Using dead channels: {}.".format(dead))
-    return dead
-
 
 def _keep_spikes(samples, bounds):
     """Only keep spikes within the bounds `bounds=(start, end)`."""
@@ -145,6 +137,38 @@ def _subtract_offsets(samples, offsets):
     return samples, spike_recordings
 
 
+def _relative_channels(channels, adjacency):
+    """Renumber channels from absolute indices to relative indices,
+    to match arrays used in the detection code.
+
+    Parameters
+    ----------
+
+    channels : dict
+        A dict {group: list_of_channels}
+    adjacency : dict
+        A dict {group: set_of_neighbors}
+
+    """
+    ch_out = {}
+    adj_out = {}
+    mapping = {}
+    offset = 0
+    for group in channels:
+        ch = channels[group]
+        n = len(ch)
+        ch_out[group] = [i + offset for i in range(n)]
+        # From absolute to relative indices.
+        mapping.update({c: (i + offset) for i, c in enumerate(ch)})
+        offset += n
+    # Recreate the adjacency dict by applying the mapping to
+    # both the keys and values.
+    for c, i in mapping.items():
+        adj_out[i] = set(mapping[_] for _ in adjacency.get(c, set())
+                         if _ in mapping)
+    return ch_out, adj_out
+
+
 #------------------------------------------------------------------------------
 # Spike detection class
 #------------------------------------------------------------------------------
@@ -167,16 +191,23 @@ class SpikeDetekt(object):
     def __init__(self, tempdir=None, probe=None, **kwargs):
         super(SpikeDetekt, self).__init__()
         self._tempdir = tempdir
-        self._dead_channels = None
         # Load a probe.
         if probe is not None:
             kwargs['probe_channels'] = _channels_per_group(probe)
             kwargs['probe_adjacency_list'] = _probe_adjacency_list(probe)
         self._kwargs = kwargs
+        # Use relative channel numbers.
+        (self._kwargs['probe_channels'],
+         self._kwargs['probe_adjacency_list']) = \
+            _relative_channels(self._kwargs['probe_channels'],
+                               self._kwargs['probe_adjacency_list'])
         self._n_channels_per_group = {
             group: len(channels)
             for group, channels in self._kwargs['probe_channels'].items()
         }
+        for group in self._n_channels_per_group:
+            logger.info("Found %d live channels in group %d.",
+                        self._n_channels_per_group[group], group)
         self._groups = sorted(self._n_channels_per_group)
         self._n_features = self._kwargs['n_features_per_channel']
         before = self._kwargs['extract_s_before']
@@ -261,7 +292,7 @@ class SpikeDetekt(object):
         return {'weak': thresholds[0],
                 'strong': thresholds[1]}
 
-    def detect(self, traces_f, thresholds=None, dead_channels=None):
+    def detect(self, traces_f, thresholds=None):
         """Detect connected waveform components in filtered traces.
 
         Parameters
@@ -271,8 +302,6 @@ class SpikeDetekt(object):
             An `(n_samples, n_channels)` array with the filtered data.
         thresholds : dict
             The weak and strong thresholds.
-        dead_channels : array-like
-            Array of dead channels.
 
         Returns
         -------
@@ -288,13 +317,6 @@ class SpikeDetekt(object):
         # Compute the threshold crossings.
         weak = thresholder.detect(traces_t, 'weak')
         strong = thresholder.detect(traces_t, 'strong')
-        # Force crossings to be False on dead channels.
-        if dead_channels is not None and len(dead_channels):
-            assert dead_channels.max() < traces_f.shape[1]
-            weak[:, dead_channels] = 0
-            strong[:, dead_channels] = 0
-        # else:
-        #     logger.debug("No dead channels specified.")
         # Run the detection.
         detector = self._create_detector()
         return detector(weak_crossings=weak,
@@ -542,8 +564,7 @@ class SpikeDetekt(object):
                               data=data_f)
 
             # Detect spikes in the filtered chunk.
-            components = self.detect(data_f, thresholds=thresholds,
-                                     dead_channels=self._dead_channels)
+            components = self.detect(data_f, thresholds=thresholds)
             self._store.store(name='components', chunk_key=chunk.key,
                               data=components)
 
@@ -633,7 +654,11 @@ class SpikeDetekt(object):
             #                    n_spikes=n_spikes_chunk)
 
     def run_serial(self, traces, interval_samples=None):
-        """Run SpikeDetekt using one CPU."""
+        """Run SpikeDetekt using one CPU.
+
+        NOTE: dead channels must have been removed beforehand in `traces`.
+
+        """
         traces, offset = _cut_traces(traces, interval_samples)
         n_samples, n_channels = traces.shape
 
@@ -656,10 +681,6 @@ class SpikeDetekt(object):
 
         # Find the weak and strong thresholds.
         thresholds = self.find_thresholds(traces)
-
-        # Find dead channels.
-        probe_channels = self._kwargs['probe_channels']
-        self._dead_channels = _find_dead_channels(probe_channels, n_channels)
 
         # Spike detection.
         n_spikes_total = self.step_detect(traces=traces,

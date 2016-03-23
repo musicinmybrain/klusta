@@ -15,6 +15,7 @@ from ..spikedetekt import (SpikeDetekt,
                            _concat,
                            _concatenate,
                            _subtract_offsets,
+                           _relative_channels,
                            )
 
 
@@ -34,6 +35,14 @@ def test_subtract_offsets():
     s, r = _subtract_offsets(samples, offsets)
     ae(s, [2, 3, 0, 2, 1])
     ae(r, [0, 0, 1, 1, 2])
+
+
+def test_relative_channels():
+    ch = {0: [2, 3, 7, 5]}
+    adj = {2: set([3]), 3: set([2, 7]), 5: set([5]), 7: set([])}
+    ch, adj = _relative_channels(ch, adj)
+    assert ch == {0: [0, 1, 2, 3]}
+    assert adj == {0: set([1]), 1: set([0, 2]), 2: set([]), 3: set([3])}
 
 
 def test_split_spikes():

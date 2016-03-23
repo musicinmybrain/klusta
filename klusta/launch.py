@@ -56,6 +56,7 @@ def detect(model, interval=None, **kwargs):
     # Probe parameters required by SpikeDetekt.
     params['probe_channels'] = model.probe.channels_per_group
     params['probe_adjacency_list'] = model.probe.adjacency
+    assert 'probe' not in params
 
     # Start the spike detection.
     logger.debug("Running SpikeDetekt...")
