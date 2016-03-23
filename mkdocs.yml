@@ -1,8 +1,6 @@
-site_name: phy
+site_name: klusta
 pages:
 - Quick start: 'index.md'
-- Data acquisition: 'data.md'
-- Probe parameters: 'probe.md'
-- Spike sorting parameters: 'params.md'
-- Spike sorting: 'klusta.md'
+- Preparing the files: 'prepare.md'
+- Spike sorting: 'sorting.md'
 theme: readthedocs

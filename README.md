@@ -42,8 +42,8 @@ Both GUIs work with the same **Kwik** format.
 
 The following instructions will install both **klusta** and the **KlustaViewa GUI**.
 
-1. Make sure that you have [**miniconda**](http://conda.pydata.org/miniconda.html) 64-bit for Python 3.5 installed on your system.
-2. [**Download this file**](https://raw.githubusercontent.com/kwikteam/klusta/master/installer/environment.yml).
+1. Make sure that you have [**miniconda**](http://conda.pydata.org/miniconda.html) installed. You can choose the Python 3.5 64-bit version for your operating system (Linux, Windows, or OS X).
+2. [**Download this file**](https://raw.githubusercontent.com/kwikteam/klusta/master/installer/environment.yml) and save it somewhere on your computer.
 3. **Open a terminal** in the directory where you saved the file and type `conda env create -n klusta`.
 4. **Done**! Now, to use klusta and KlustaViewa, you have to first type `source activate klusta` in a terminal (omit the `source` on Windows), and then call `klusta` or `klustaviewa`. See the documentation for more details.
 
