@@ -46,7 +46,7 @@ The results are saved in two new files:
 * **A .kwik file**: this file contains all the results of the spike sorting session, except the PCA features: mainly the spike times and spike clusters, and all the metadata.
 * **A .kwx file**: this file contains the PCA features.
 
-These files are HDF5 files in the [**Kwik format**](https://github.com/klusta-team/kwiklib/wiki/Kwik-format). You can open them with any HDF5 reader and with any programming language.
+These files are HDF5 files in the [**Kwik format**](format.md). You can open them with any HDF5 reader and with any programming language.
 
 You can have a quick look inside a `.kwik` file with the following command:
 
