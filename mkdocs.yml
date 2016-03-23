@@ -1,6 +1,5 @@
 site_name: klusta
 pages:
 - Quick start: 'index.md'
-- Preparing the files: 'prepare.md'
 - Spike sorting: 'sorting.md'
 theme: readthedocs
