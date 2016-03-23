@@ -231,6 +231,7 @@ class WaveformLoader(object):
                  scale_factor=None,
                  dc_offset=None,
                  ):
+        self.n_samples_trace = 0
         # A (possibly memmapped) array-like structure with traces.
         if traces is not None:
             self.traces = traces
