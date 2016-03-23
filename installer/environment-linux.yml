@@ -1,4 +1,4 @@
-name: klustasuite
+name: klusta
 channels:
   - kwikteam
 dependencies:
