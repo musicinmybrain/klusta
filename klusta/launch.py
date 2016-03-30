@@ -121,6 +121,11 @@ def cluster(model, spike_ids=None, **kwargs):
     return sc, metadata
 
 
+def save_clu(spike_clusters, clu_path):
+    arr = np.concatenate(([len(np.unique(spike_clusters))], spike_clusters))
+    np.savetxt(clu_path, arr, fmt='%d', newline='\n')
+
+
 def klusta(prm_file,
            output_dir=None,
            interval=None,
@@ -128,6 +133,7 @@ def klusta(prm_file,
            detect_only=False,
            cluster_only=False,
            overwrite=False,
+           clu_output=None,
            ):
 
     if prm_file.endswith('.kwik'):
@@ -207,27 +213,37 @@ def klusta(prm_file,
             spike_clusters, metadata = cluster(model)
             model.close()
 
-            # Add the results to the kwik file.
-            model = KwikModel(kwik_path, channel_group=channel_group)
-
-            # Backup and remove the main clustering.
-            if 'main' in model.clusterings:
-                i = len([_ for _ in model.clusterings
-                         if _.startswith('backup')])
-                name = 'backup-%d' % i
-                model.copy_clustering('main', name)
-                model.clustering = name
-                model.delete_clustering('main')
-                model.add_clustering('main', spike_clusters)
+            if clu_output:
+                # Save a clu file.
+                clu_path = '%s.%d.clu' % (prm['experiment_name'],
+                                          channel_group)
+                clu_path = op.join(output_dir, clu_path)
+                logger.info("Save %d spikes to `%s`.",
+                            len(spike_clusters), clu_path)
+                save_clu(spike_clusters, clu_path)
             else:
-                model.add_clustering('main', spike_clusters)
-                model.copy_clustering('main', 'original')
+                logger.info("Save the clustering to `%s`.", kwik_path)
+                # Or add the results to the kwik file.
+                model = KwikModel(kwik_path, channel_group=channel_group)
 
-            # Switch to main.
-            model.clustering = 'main'
-            model.clustering_metadata.update(metadata)
-            model.save(clustering_metadata=model.clustering_metadata)
-            model.close()
+                # Backup and remove the main clustering.
+                if 'main' in model.clusterings:
+                    i = len([_ for _ in model.clusterings
+                             if _.startswith('backup')])
+                    name = 'backup-%d' % i
+                    model.copy_clustering('main', name)
+                    model.clustering = name
+                    model.delete_clustering('main')
+                    model.add_clustering('main', spike_clusters)
+                else:
+                    model.add_clustering('main', spike_clusters)
+                    model.copy_clustering('main', 'original')
+
+                # Switch to main.
+                model.clustering = 'main'
+                model.clustering_metadata.update(metadata)
+                model.save(clustering_metadata=model.clustering_metadata)
+                model.close()
         logger.info("Clustering done!")
 
     return kwik_path
@@ -257,6 +273,12 @@ def klusta(prm_file,
               )
 @click.option('--cluster-only',
               help='Only do automatic clustering.',
+              default=False,
+              is_flag=True,
+              )
+@click.option('--clu-output',
+              help=('Use `.clu` instead of `.kwik` for automatic clustering '
+                    'output.'),
               default=False,
               is_flag=True,
               )
