@@ -126,6 +126,10 @@ def save_clu(spike_clusters, clu_path):
     np.savetxt(clu_path, arr, fmt='%d', newline='\n')
 
 
+def save_res(spike_samples, res_path):
+    np.savetxt(res_path, spike_samples, fmt='%d', newline='\n')
+
+
 def klusta(prm_file,
            output_dir=None,
            interval=None,
@@ -133,7 +137,7 @@ def klusta(prm_file,
            detect_only=False,
            cluster_only=False,
            overwrite=False,
-           clu_output=None,
+           legacy_output=None,
            ):
 
     if prm_file.endswith('.kwik'):
@@ -189,6 +193,15 @@ def klusta(prm_file,
         creator.add_spikes_after_detection(out)
         logger.info("Spike detection done!")
 
+        # Save res files.
+        if legacy_output:
+            for group in out.groups:
+                res_path = '%s.%d.res' % (prm['experiment_name'], group)
+                res_path = op.join(output_dir, res_path)
+                logger.info("Save %d spikes to `%s`.",
+                            len(out.spike_samples[group]), res_path)
+                save_res(out.spike_samples[group], res_path)
+
     # List of channel groups.
     if channel_group is None:
         # If no channel group specified, find the list of all channel groups.
@@ -213,37 +226,37 @@ def klusta(prm_file,
             spike_clusters, metadata = cluster(model)
             model.close()
 
-            if clu_output:
-                # Save a clu file.
+            # Save clu files.
+            if legacy_output:
                 clu_path = '%s.%d.clu' % (prm['experiment_name'],
                                           channel_group)
                 clu_path = op.join(output_dir, clu_path)
                 logger.info("Save %d spikes to `%s`.",
                             len(spike_clusters), clu_path)
                 save_clu(spike_clusters, clu_path)
+
+            logger.info("Save the clustering to `%s`.", kwik_path)
+            # Or add the results to the kwik file.
+            model = KwikModel(kwik_path, channel_group=channel_group)
+
+            # Backup and remove the main clustering.
+            if 'main' in model.clusterings:
+                i = len([_ for _ in model.clusterings
+                         if _.startswith('backup')])
+                name = 'backup-%d' % i
+                model.copy_clustering('main', name)
+                model.clustering = name
+                model.delete_clustering('main')
+                model.add_clustering('main', spike_clusters)
             else:
-                logger.info("Save the clustering to `%s`.", kwik_path)
-                # Or add the results to the kwik file.
-                model = KwikModel(kwik_path, channel_group=channel_group)
+                model.add_clustering('main', spike_clusters)
+                model.copy_clustering('main', 'original')
 
-                # Backup and remove the main clustering.
-                if 'main' in model.clusterings:
-                    i = len([_ for _ in model.clusterings
-                             if _.startswith('backup')])
-                    name = 'backup-%d' % i
-                    model.copy_clustering('main', name)
-                    model.clustering = name
-                    model.delete_clustering('main')
-                    model.add_clustering('main', spike_clusters)
-                else:
-                    model.add_clustering('main', spike_clusters)
-                    model.copy_clustering('main', 'original')
-
-                # Switch to main.
-                model.clustering = 'main'
-                model.clustering_metadata.update(metadata)
-                model.save(clustering_metadata=model.clustering_metadata)
-                model.close()
+            # Switch to main.
+            model.clustering = 'main'
+            model.clustering_metadata.update(metadata)
+            model.save(clustering_metadata=model.clustering_metadata)
+            model.close()
         logger.info("Clustering done!")
 
     return kwik_path
@@ -276,9 +289,8 @@ def klusta(prm_file,
               default=False,
               is_flag=True,
               )
-@click.option('--clu-output',
-              help=('Use `.clu` instead of `.kwik` for automatic clustering '
-                    'output.'),
+@click.option('--legacy-output',
+              help=('Save `.res` and `.clu` files in addition to `.kwik`.'),
               default=False,
               is_flag=True,
               )
