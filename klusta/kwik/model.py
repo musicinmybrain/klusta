@@ -1170,6 +1170,7 @@ class KwikModel(object):
 
         _to_close = self._open_kwik_if_needed(mode='a')
 
+        logger.debug("Add clustering %s.", name)
         _create_clustering(self._kwik,
                            name,
                            channel_group=self._channel_group,
@@ -1216,10 +1217,12 @@ class KwikModel(object):
 
     def rename_clustering(self, old_name, new_name):
         """Rename a clustering in the `.kwik` file."""
+        logger.debug("Rename clustering %s => %s.", old_name, new_name)
         self._move_clustering(old_name, new_name, copy=False)
 
     def copy_clustering(self, name, new_name):
         """Copy a clustering in the `.kwik` file."""
+        logger.debug("Copy clustering %s => %s.", name, new_name)
         self._move_clustering(name, new_name, copy=True)
 
     def delete_clustering(self, name):
@@ -1230,6 +1233,7 @@ class KwikModel(object):
             raise ValueError(("The clustering {0} "
                               "doesn't exist.").format(name))
 
+            logger.debug("Delete clustering %s.", name)
         _to_close = self._open_kwik_if_needed(mode='a')
 
         # /channel_groups/x/spikes/clusters/<name>

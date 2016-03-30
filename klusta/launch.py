@@ -209,8 +209,22 @@ def klusta(prm_file,
 
             # Add the results to the kwik file.
             model = KwikModel(kwik_path, channel_group=channel_group)
-            model.add_clustering('main', spike_clusters)
-            model.copy_clustering('main', 'original')
+
+            # Backup and remove the main clustering.
+            if 'main' in model.clusterings:
+                i = len([_ for _ in model.clusterings
+                         if _.startswith('backup')])
+                name = 'backup-%d' % i
+                model.copy_clustering('main', name)
+                model.clustering = name
+                model.delete_clustering('main')
+                model.add_clustering('main', spike_clusters)
+            else:
+                model.add_clustering('main', spike_clusters)
+                model.copy_clustering('main', 'original')
+
+            # Switch to main.
+            model.clustering = 'main'
             model.clustering_metadata.update(metadata)
             model.save(clustering_metadata=model.clustering_metadata)
             model.close()
