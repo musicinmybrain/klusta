@@ -1012,7 +1012,7 @@ class KwikModel(object):
         # No need to keep the kwik file open.
         self._kwik.close()
 
-        logger.info("Kwik file `%s` loaded.", self.kwik_path)
+        logger.debug("Kwik file `%s` loaded.", self.kwik_path)
 
     def save(self,
              spike_clusters=None,

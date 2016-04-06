@@ -102,10 +102,29 @@ def cluster(model, spike_ids=None, **kwargs):
             shutil.copy(path, path + '~')
         np.savetxt(path, spike_clusters, fmt='%d')
 
-    logger.info("Running KK...")
+    # Load initial clusters.
+    spike_clusters = None
+    path = op.join(kk_dir, 'spike_clusters.txt')
+    if op.exists(path):
+        spike_clusters = np.loadtxt(path).astype(np.int64)
+        if spike_clusters.shape != (model.n_spikes,):
+            logger.warn("Unable to resume KK from `%s`, there are %d values "
+                        "instead of %d", path, len(spike_clusters), n_spikes)
+            spike_clusters = None
+        else:
+            logger.info("Resuming KK from `%s` (%d clusters)...",
+                        path,
+                        len(np.unique(spike_clusters)))
+            logger.info("If you want to restart the clustering, delete `%s`.",
+                        path)
+
+    if spike_clusters is None:
+        logger.info("Starting KK...")
+
     # Run KK.
     sc, params = klustakwik(model=model,
                             spike_ids=spike_ids,
+                            spike_clusters=spike_clusters,
                             iter_callback=on_iter,
                             **params)
     logger.info("The automatic clustering process has finished.")

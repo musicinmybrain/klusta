@@ -78,6 +78,7 @@ def sparsify_features_masks(features, masks, chunk_size=10000):
 
 def klustakwik(model=None,
                spike_ids=None,
+               spike_clusters=None,  # Initial spike clusters.
                features=None,
                masks=None,
                iter_callback=None,
@@ -103,7 +104,8 @@ def klustakwik(model=None,
     # by KK.
     data = sparsify_features_masks(features, masks)
     data = data.to_sparse_data()
-    # Run KK.
+
+    # Instantiate KK.
     from klustakwik2 import KK, __version__
     kk = KK(data, **kwargs)
 
@@ -115,7 +117,11 @@ def klustakwik(model=None,
         if iter_callback:
             iter_callback(kk.clusters)
 
-    kk.cluster_mask_starts()
+    # Launch KK.
+    if spike_clusters is None:
+        kk.cluster_mask_starts()
+    else:
+        kk.cluster_from(spike_clusters)
     spike_clusters = kk.clusters
     params = kk.params
     params['version'] = __version__
