@@ -58,6 +58,12 @@ dependencies:
     - kwiklib
     - klustaviewa
 
+    - traitlets
+    - joblib
+    - vispy
+    - phy
+    - phycontrib
+
     - click
     - pyopengl
     - pytest

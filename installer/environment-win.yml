@@ -46,6 +46,12 @@ dependencies:
   - kwiklib
   - qtools
 
+  - traitlets
+  - joblib
+  - vispy
+  - phy
+  - phycontrib
+
   - click==6.3
   - colorama==0.3.7
   - cookies==2.2.1
