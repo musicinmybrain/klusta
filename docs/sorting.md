@@ -11,6 +11,9 @@ You need to specify three pieces of information in order to run klusta:
 * The probe (PRB) file
 * The parameters (PRM) file
 
+**Note: you shouldn't run more than one spike sorting session in a given directory. Use a different directory for every dataset.**
+
+
 ### Raw data
 
 Your raw data needs to be stored in one or several flat binary files with no header (support for files with headers is coming soon). The extension is generally `.dat` but it could be something else.
