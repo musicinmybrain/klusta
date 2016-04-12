@@ -85,10 +85,17 @@ def _cut_traces(traces, interval_samples):
     if interval_samples is not None:
         start, end = interval_samples
     else:
-        start, end = 0, n_samples
+        return traces, 0
     assert 0 <= start < end
+    # WARNING: this loads all traces into memory! To fix this properly,
+    # we'll have to implement lazy chunking in ConcatenatedTraces.
+    size = (end - start) * traces.shape[1] * traces.dtype.itemsize / 1024.**3
+    if size > 1:
+        logger.warn("Loading all traces in memory: this will require %.3f GB "
+                    "of RAM! ", size)
+        logger.warn("To avoid this, do not specify `--interval`. "
+                    "This bug will be fixed later.")
     traces = traces[start:end, ...]
-    n_samples = traces.shape[0]
     if start > 0:
         # TODO: add offset to the spike samples...
         raise NotImplementedError("Need to add `start` to the "
