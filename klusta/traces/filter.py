@@ -25,11 +25,12 @@ def bandpass_filter(rate=None, low=None, high=None, order=None):
 
 def apply_filter(x, filter=None, axis=0):
     """Apply a filter to an array."""
-    x = np.asarray(x)
+    if isinstance(x, list):
+        x = np.asarray(x)
     if x.shape[axis] == 0:
         return x
     b, a = filter
-    return signal.filtfilt(b, a, x, axis=axis)
+    return signal.filtfilt(b, a, x[:], axis=axis)
 
 
 class Filter(object):
