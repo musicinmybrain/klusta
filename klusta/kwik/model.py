@@ -842,12 +842,20 @@ class KwikModel(object):
     def _load_cluster_groups(self):
         clusters = self._kwik.groups(self._clustering_path)
         clusters = [int(cluster) for cluster in clusters]
-        # Create the mapping group_number => group name from the cluster_groups
-        # HDF5 group in the Kwik file.
-        mapping = self._cluster_groups_mapping
+        # NOTE: inverse mapping group name ==> group_number
+        mapping = {a: b.lower()
+                   for a, b in self._cluster_groups_mapping.items()}
+        imapping = {b: a for a, b in mapping.items()}
         for cluster in clusters:
             path = self._cluster_path(cluster)
-            group_id = int(self._kwik.read_attr(path, 'cluster_group'))
+            # NOTE: The group id is saved in the Kwik file. However,
+            # it might happen that the Kwik file was saved with a bug that
+            # replaced the group id by its name. Here we ensure that we
+            # have a group id.
+            group_id = self._kwik.read_attr(path, 'cluster_group')
+            if isinstance(group_id, string_types):
+                group_id = group_id.lower()
+            group_id = int(imapping.get(group_id, group_id))
             # Get the group name.
             assert group_id in mapping
             group = mapping.get(group_id).lower()
