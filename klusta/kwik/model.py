@@ -13,12 +13,11 @@ from random import randint
 
 import logging
 import numpy as np
-import six
-from six import string_types
+from six import string_types, integer_types
 
 from ..traces.waveform import WaveformLoader, SpikeLoader
 from ..traces.filter import bandpass_filter, apply_filter
-from ..utils import _unique, _is_integer, _as_tuple, _read_python
+from ..utils import _unique, _as_tuple, _read_python
 from .h5 import open_h5, File, _mmap_h5
 from .mea import MEA
 
@@ -150,7 +149,7 @@ class VirtualMappedArray(object):
         self._fill = fill
 
     def __getitem__(self, item):
-        if isinstance(item, six.integer_types):
+        if isinstance(item, integer_types):
             return self._fill * np.ones(self.shape[1:], dtype=self.dtype)
         else:
             assert not isinstance(item, tuple)
@@ -273,8 +272,6 @@ def _list_int_children(group):
     return sorted(_to_int_list(group.keys()))
 
 
-# TODO: refactor the functions below with h5.File.children().
-
 def _list_channel_groups(kwik):
     """Return the list of channel groups in a kwik file."""
     if 'channel_groups' in kwik:
@@ -299,7 +296,7 @@ def _list_recordings(kwik):
 
 def _list_channels(kwik, channel_group=None):
     """Return the list of channels in a kwik file."""
-    assert isinstance(channel_group, six.integer_types)
+    assert isinstance(channel_group, integer_types)
     path = '/channel_groups/{0:d}/channels'.format(channel_group)
     if path in kwik:
         channels = _list_int_children(kwik[path])
@@ -313,7 +310,7 @@ def _list_clusterings(kwik, channel_group=None):
     if channel_group is None:
         raise RuntimeError("channel_group must be specified when listing "
                            "the clusterings.")
-    assert isinstance(channel_group, six.integer_types)
+    assert isinstance(channel_group, integer_types)
     path = '/channel_groups/{0:d}/clusters'.format(channel_group)
     if path not in kwik:
         return []
@@ -508,16 +505,6 @@ _DEFAULT_GROUPS = [(0, 'Noise'),
                    ]
 
 
-def cluster_group_id(name_or_id):
-    """Return the id of a cluster group from its name."""
-    if isinstance(name_or_id, six.string_types):
-        d = {group.lower(): id for id, group in _DEFAULT_GROUPS}
-        return d[name_or_id.lower()]
-    else:
-        assert _is_integer(name_or_id)
-        return name_or_id
-
-
 def _check_spikes_increasing(spike_samples):
 
     while not np.all(np.diff(spike_samples) >= 0):
@@ -546,9 +533,6 @@ def _check_spikes_increasing(spike_samples):
 
 class KwikModel(object):
     """Holds data contained in a kwik file."""
-
-    """Names of the default cluster groups."""
-    default_cluster_groups = dict(_DEFAULT_GROUPS)
 
     def __init__(self, kwik_path=None,
                  channel_group=None,
@@ -614,6 +598,10 @@ class KwikModel(object):
     @property
     def _clusters_path(self):
         return '{0:s}/clusters'.format(self._channel_groups_path)
+
+    @property
+    def _cluster_groups_path(self):
+        return '{0:s}/cluster_groups'.format(self._channel_groups_path)
 
     def _cluster_path(self, cluster):
         return '{0:s}/{1:d}'.format(self._clustering_path, cluster)
@@ -691,7 +679,7 @@ class KwikModel(object):
         # self._waveform_loader.channels = self._channel_order
 
     def _create_cluster_metadata(self):
-        self._cluster_metadata = defaultdict(lambda: 3)
+        self._cluster_metadata = defaultdict(lambda: 'unsorted')
 
     def _load_meta(self, name='spikedetekt'):
         """Load metadata from kwik file."""
@@ -838,32 +826,59 @@ class KwikModel(object):
         # Load the specified clustering.
         self._clustering = clustering
 
+    @property
+    def _cluster_groups_mapping(self):
+        """Mapping {cluster_group_id: name}."""
+        path = '{}/{}'.format(self._cluster_groups_path,
+                              self._clustering)
+        cluster_groups = sorted(map(int, self._kwik.groups(path)))
+        mapping = {}
+        for cluster_group in cluster_groups:
+            name = self._kwik.read_attr('{}/{}'.format(path, cluster_group),
+                                        'name')
+            mapping[cluster_group] = name
+        return mapping
+
     def _load_cluster_groups(self):
         clusters = self._kwik.groups(self._clustering_path)
         clusters = [int(cluster) for cluster in clusters]
-        # NOTE: mapping group_number => group name
-        mapping = dict(_DEFAULT_GROUPS)
+        # Create the mapping group_number => group name from the cluster_groups
+        # HDF5 group in the Kwik file.
+        mapping = self._cluster_groups_mapping
         for cluster in clusters:
             path = self._cluster_path(cluster)
-            group = self._kwik.read_attr(path, 'cluster_group')
+            group_id = int(self._kwik.read_attr(path, 'cluster_group'))
             # Get the group name.
-            group = mapping.get(group, group)
-            assert group is None or isinstance(group, string_types)
-            if group:
-                group = group.lower()
+            assert group_id in mapping
+            group = mapping.get(group_id).lower()
+            assert group and isinstance(group, string_types)
             self._cluster_metadata[cluster] = group
 
     def _save_cluster_groups(self, cluster_groups):
         assert isinstance(cluster_groups, dict)
-        # NOTE: mapping group name ==> group_number
-        mapping = dict(_DEFAULT_GROUPS)
-        mapping = {a: b for b, a in mapping.items()}
+        # NOTE: inverse mapping group name ==> group_number
+        mapping = {a: b.lower()
+                   for a, b in self._cluster_groups_mapping.items()}
+        imapping = {b: a for a, b in mapping.items()}
         for cluster, group in cluster_groups.items():
-            # Get the group index, or the name (new group).
-            assert group is None or isinstance(group, string_types)
-            group = mapping.get(group, group)
+            # Find the group and the group name.
+            if isinstance(group, integer_types):
+                group_id = group
+                assert group_id in mapping
+                group = mapping.get(group_id)
+            elif isinstance(group, string_types):
+                group = group.lower()
+                assert group in imapping
+                group_id = imapping.get(group)
+            elif group is None:
+                group_id = 3
+                group = mapping.get(group_id)
+            assert group_id is not None
+            assert group_id >= 0
+            assert group is not None
+            assert isinstance(group, string_types)
             path = self._cluster_path(cluster)
-            self._kwik.write_attr(path, 'cluster_group', group)
+            self._kwik.write_attr(path, 'cluster_group', group_id)
             self._cluster_metadata[cluster] = group
 
     def _load_clustering_metadata(self):
@@ -1122,6 +1137,8 @@ class KwikModel(object):
         if group_id <= 3:
             raise ValueError("Default groups cannot be changed.")
 
+        _DEFAULT_GROUPS.append((group_id, name))
+
         _to_close = self._open_kwik_if_needed(mode='a')
 
         _create_cluster_group(self._kwik, group_id, name,
@@ -1271,7 +1288,7 @@ class KwikModel(object):
 
     @channel_group.setter
     def channel_group(self, value):
-        assert isinstance(value, six.integer_types)
+        assert isinstance(value, integer_types)
         self._channel_group = value
         self._channel_group_changed(value)
 
@@ -1507,7 +1524,7 @@ class KwikModel(object):
         clustering.
 
         `cluster_metadata.group(cluster_id)` returns the group of a given
-        cluster. The default group is 3 (unsorted).
+        cluster. The default group is 'unsorted'.
 
         """
         return self._cluster_metadata

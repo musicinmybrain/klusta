@@ -216,20 +216,20 @@ def test_kwik_save(tempdir):
 
     kwik = KwikModel(filename)
 
-    cluster_groups = {cluster: kwik.cluster_metadata[cluster]
-                      for cluster in range(_N_CLUSTERS)}
+    cluster_groups = kwik.cluster_groups
     sc_0 = kwik.spike_clusters.copy()
     sc_1 = sc_0.copy()
     new_cluster = _N_CLUSTERS + 10
     sc_1[_N_SPIKES // 2:] = new_cluster
-    cluster_groups[new_cluster] = 'new'
     ae(kwik.spike_clusters, sc_0)
 
-    assert kwik.cluster_metadata[new_cluster] == 3
+    kwik.add_cluster_group(4, 'new')
+    cluster_groups[new_cluster] = 'new'
+    assert kwik.cluster_metadata[new_cluster] == 'unsorted'
+
     kwik.save(sc_1, cluster_groups, {'test': (1, 2.)})
     ae(kwik.spike_clusters, sc_1)
     assert kwik.cluster_metadata[new_cluster] == 'new'
-
     kwik.close()
 
     kwik = KwikModel(filename)
