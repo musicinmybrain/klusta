@@ -233,6 +233,12 @@ def klusta(prm_file,
 
     # Clustering.
     if do_cluster:
+
+        # Update KlustaKwik2 parameters.
+        creator = KwikCreator(kwik_path)
+        creator.set_metadata('/application_data/klustakwik2',
+                             **prm.get('klustakwik2', {}))
+
         # Cluster every channel group.
         for channel_group in channel_groups:
             logger.info("Starting clustering on shank %d/%d.",

@@ -118,3 +118,18 @@ def test_launch_real(tempdir, prm_path_real):
     assert model.n_spikes >= 100
     assert model.n_clusters >= 2
     model.describe()
+
+    # Cluster only with different params.
+    path = op.join(tempdir, 'params.prm')
+    with open(path, 'a') as f:
+        f.write('klustakwik2 = dict(num_starting_clusters=20)')
+
+    kwik_path = klusta(prm_path_real,
+                       interval=(0., 4.),
+                       output_dir=tempdir,
+                       cluster_only=True,
+                       )
+
+    # Check that the new param has been taken into account.
+    model = KwikModel(kwik_path)
+    assert model.kk2_metadata['num_starting_clusters'] == 20
