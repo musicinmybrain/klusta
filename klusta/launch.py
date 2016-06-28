@@ -7,6 +7,7 @@
 #------------------------------------------------------------------------------
 
 import logging
+from operator import itemgetter
 import os.path as op
 import shutil
 import sys
@@ -211,7 +212,10 @@ def klusta(prm_file,
         # Add the spikes to the kwik file.
         creator = KwikCreator(kwik_path)
         creator.add_spikes_after_detection(out)
-        logger.info("Spike detection done!")
+        ns = ', '.join('%d spikes found in shank %d' % (n, i)
+                       for (i, n) in sorted(out.n_spikes_per_group.items(),
+                                            key=itemgetter(0)))
+        logger.info("Spike detection done! " + ns)
 
         # Save res files.
         if legacy_output:
