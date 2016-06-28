@@ -143,7 +143,7 @@ def test_kwik_open_full(tempdir):
 
     assert kwik.all_masks.shape == (_N_SPIKES, nc)
 
-    assert kwik.all_traces.shape == (_N_SAMPLES_TRACES, nc)
+    assert kwik.all_traces.shape == (_N_SAMPLES_TRACES, _N_CHANNELS)
 
     assert kwik.all_waveforms[0].shape == (1, 40, nc)
     assert kwik.all_waveforms[-1].shape == (1, 40, nc)

@@ -558,6 +558,7 @@ class KwikModel(object):
         self._waveforms = None
         self._cluster_metadata = None
         self._clustering_metadata = {}
+        self._all_traces = None
         self._traces = None
         self._recording_offsets = None
         self._waveform_loader = None
@@ -933,6 +934,7 @@ class KwikModel(object):
             i += trace.shape[0] + 1
         self._traces = _concatenate_virtual_arrays(traces,
                                                    self._channel_order)
+        self._all_traces = _concatenate_virtual_arrays(traces)
 
     def open(self, kwik_path, channel_group=None, clustering=None):
         """Open a Kwik dataset.
@@ -1416,7 +1418,7 @@ class KwikModel(object):
         or both.
 
         """
-        return self._traces
+        return self._all_traces
 
     @property
     def spike_samples(self):
