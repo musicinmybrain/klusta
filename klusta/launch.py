@@ -8,6 +8,7 @@
 
 import logging
 from operator import itemgetter
+import os
 import os.path as op
 import shutil
 import sys
@@ -92,12 +93,13 @@ def cluster(model, spike_ids=None, **kwargs):
     else:
         spike_clusters_orig = model.spike_clusters.copy()
 
+    # Save clustering checkpoint to a text file.
+    path = op.join(kk_dir, 'spike_clusters.%d.txt' % model.channel_group)
+
     def on_iter(sc):
         # Update the original spike clusters.
         spike_clusters = spike_clusters_orig.copy()
         spike_clusters[spike_ids] = sc
-        # Save to a text file.
-        path = op.join(kk_dir, 'spike_clusters.txt')
         # Backup.
         if op.exists(path):
             shutil.copy(path, path + '~')
@@ -105,7 +107,6 @@ def cluster(model, spike_ids=None, **kwargs):
 
     # Load initial clusters.
     spike_clusters = None
-    path = op.join(kk_dir, 'spike_clusters.txt')
     if op.exists(path):
         spike_clusters = np.loadtxt(path).astype(np.int64)
         if spike_clusters.shape != (model.n_spikes,):
