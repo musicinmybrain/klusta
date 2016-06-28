@@ -8,7 +8,6 @@
 
 import logging
 from operator import itemgetter
-import os
 import os.path as op
 import shutil
 import sys

@@ -49,11 +49,11 @@ def prm_path_shanks(tempdir):
     # Create the PRB.
     prb = dedent("""
                  channel_groups = {
-                    0: {'channels': [0, 1],
-                        'graph': [[0, 1]],
+                    0: {'channels': [0, 2],
+                        'graph': [[0, 2]],
                         },
-                    1: {'channels': [2, 3],
-                        'graph': [[2, 3]],
+                    1: {'channels': [1, 4],
+                        'graph': [[1, 4]],
                         }
                  }
                  """)
@@ -99,8 +99,8 @@ def test_launch_shanks(tempdir, prm_path_shanks):
 
     model.channel_group = 1
     model.describe()
-    assert model.n_spikes == 0
-    assert model.n_clusters == 0
+    assert model.n_spikes > 0
+    assert model.n_clusters > 0
 
     assert model.clustering_metadata['klustakwik2_num_starting_clusters'] == 20
 

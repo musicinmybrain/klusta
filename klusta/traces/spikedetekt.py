@@ -324,6 +324,19 @@ class SpikeDetekt(object):
         # Compute the threshold crossings.
         weak = thresholder.detect(traces_t, 'weak')
         strong = thresholder.detect(traces_t, 'strong')
+
+        # Find dead channels.
+        cpg = self._kwargs['probe_channels']
+        live_channels = sorted([item for sublist in cpg.values()
+                                for item in sublist])
+        n_channels = traces_f.shape[1]
+        dead_channels = np.setdiff1d(np.arange(n_channels), live_channels)
+        logger.debug("Dead channels: %s.", ', '.join(map(str, dead_channels)))
+
+        # Kill threshold crossings on dead channels.
+        weak[:, dead_channels] = 0
+        strong[:, dead_channels] = 0
+
         # Run the detection.
         detector = self._create_detector()
         return detector(weak_crossings=weak,
@@ -661,11 +674,7 @@ class SpikeDetekt(object):
             #                    n_spikes=n_spikes_chunk)
 
     def run_serial(self, traces, interval_samples=None):
-        """Run SpikeDetekt using one CPU.
-
-        NOTE: dead channels must have been removed beforehand in `traces`.
-
-        """
+        """Run SpikeDetekt using one CPU."""
         traces, offset = _cut_traces(traces, interval_samples)
         n_samples, n_channels = traces.shape
 
