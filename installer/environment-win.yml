@@ -1,6 +1,4 @@
 name: klusta
-channels:
-  - kwikteam
 dependencies:
 - cython=0.23.4=py27_0
 - dateutil=2.4.1=py27_0
@@ -37,12 +35,11 @@ dependencies:
 - traitlets=4.2.1=py27_0
 - wheel=0.29.0=py27_0
 - zlib=1.2.8=vc9_2
-
-- klustakwik2=0.2.4=nppy27_0
 - pip:
   - galry
   - klusta
   - klustaviewa
+  - klustakwik2
   - kwiklib
   - qtools
 
