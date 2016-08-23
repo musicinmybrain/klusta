@@ -50,7 +50,8 @@ The following instructions will install both **klusta** and the **KlustaViewa GU
 3. **Open a terminal** (on Windows, `cmd`, not Powershell) in the directory where you saved the file and type:
 
     ```bash
-    conda install conda=3 --yes
+    conda install conda-env=2.4
+    conda install conda=3
     conda env create -n klusta -f environment-XXX.yml  # replace `XXX` by your system
     source activate klusta  # omit the `source` on Windows
     conda install numpy=1.8 --yes
