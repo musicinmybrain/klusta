@@ -856,6 +856,9 @@ class KwikModel(object):
             group_id = self._kwik.read_attr(path, 'cluster_group')
             if isinstance(group_id, string_types):
                 group_id = group_id.lower()
+            # HACK: for an unknown reason, group_id might sometimes be an array
+            if isinstance(group_id, np.ndarray):
+                group_id = group_id[0]
             group_id = int(imapping.get(group_id, group_id))
             # Get the group name.
             assert group_id in mapping
