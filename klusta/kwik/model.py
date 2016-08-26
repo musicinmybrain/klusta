@@ -1421,6 +1421,11 @@ class KwikModel(object):
         return self._all_traces
 
     @property
+    def traces(self):
+        """Like all_traces, but without the dead channels."""
+        return self._traces
+
+    @property
     def spike_samples(self):
         """Spike samples from the current channel group.
 
