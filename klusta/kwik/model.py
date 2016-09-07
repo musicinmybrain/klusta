@@ -857,7 +857,7 @@ class KwikModel(object):
             if isinstance(group_id, string_types):
                 group_id = group_id.lower()
             # HACK: for an unknown reason, group_id might sometimes be an array
-            if isinstance(group_id, np.ndarray):
+            if isinstance(group_id, np.ndarray):  # pragma: no cover
                 group_id = group_id[0]
             group_id = int(imapping.get(group_id, group_id))
             # Get the group name.
