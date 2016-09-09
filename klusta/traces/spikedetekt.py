@@ -203,11 +203,6 @@ class SpikeDetekt(object):
             kwargs['probe_channels'] = _channels_per_group(probe)
             kwargs['probe_adjacency_list'] = _probe_adjacency_list(probe)
         self._kwargs = kwargs
-        # Use relative channel numbers.
-        (self._kwargs['probe_channels'],
-         self._kwargs['probe_adjacency_list']) = \
-            _relative_channels(self._kwargs['probe_channels'],
-                               self._kwargs['probe_adjacency_list'])
         self._n_channels_per_group = {
             group: len(channels)
             for group, channels in self._kwargs['probe_channels'].items()
