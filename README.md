@@ -25,39 +25,26 @@ You will need a GUI to visualize the spike sorting results.
 
 We have developed two GUI programs with the same features:
 
-* **KlustaViewa**: older project, but widely used. **This will be automatically installed if you follow the installation instructions below.**
-* **phy KwikGUI**: newer project, scales to hundreds/thousands of channels, still experimental. You'll need to install [phy](https://github.com/kwikteam/phy) and [phy-contrib](https://github.com/kwikteam/phy-contrib) if you want to try the development version.
+* **phy KwikGUI**: newer project, scales to hundreds/thousands of channels, still relatively experimental. **It will be automatically installed if you follow the install instructions below.**
+* **[KlustaViewa](https://github.com/klusta-team/klustaviewa)**: widely used, but older and a bit hard to install since it relies on very old dependencies.
 
 Both GUIs work with the same **Kwik** format.
 
 
-## Technical details
-
-**klusta** is written in pure Python. The clustering code, written in Python and Cython, currently lives in [another repository](https://github.com/kwikteam/klustakwik2/).
-
-
 ## Quick install guide
 
-**Note**: the installation instructions will be simplified soon.
-
-The following instructions will install both **klusta** and the **KlustaViewa GUI**.
+The following instructions will install both **klusta** and the **phy KwikGUI**.
 
 1. Make sure that you have [**miniconda**](http://conda.pydata.org/miniconda.html) installed. You can choose the Python 3.5 64-bit version for your operating system (Linux, Windows, or OS X).
-2. **Download the environment file:**
-    * [Linux](https://raw.githubusercontent.com/kwikteam/klusta/master/installer/environment-linux.yml)
-    * [OS X](https://raw.githubusercontent.com/kwikteam/klusta/master/installer/environment-osx.yml)
-    * [Windows](https://raw.githubusercontent.com/kwikteam/klusta/master/installer/environment-win.yml)
-3. **Open a terminal** (on Windows, `cmd`, not Powershell) in the directory where you saved the file and type:
+2. [Download the environment file.](https://raw.githubusercontent.com/kwikteam/klusta/master/installer/environment.yml)
+3. Open a terminal (on Windows, `cmd`, not Powershell) in the directory where you saved the file and type:
 
     ```bash
-    conda install conda-env=2.4
-    conda install conda=3
-    conda env create -n klusta -f environment-XXX.yml  # replace `XXX` by your system
-    source activate klusta  # omit the `source` on Windows
-    conda install numpy=1.8 --yes
+    conda env create -n klusta -f environment.yml
     ```
 
-4. **Done**! Now, to use klusta and KlustaViewa, you have to first type `source activate klusta` in a terminal (omit the `source` on Windows), and then call `klusta` or `klustaviewa`. See the documentation for more details.
+4. **Done**! Now, to use klusta and the phy KwikGUI, you have to first type `source activate klusta` in a terminal (omit the `source` on Windows), and then call `klusta yourfile.prm` to spikesort your data, and `phy kwik-gui yourfile.kwik` to launch the GUI. See the documentation for more details.
+
 
 ### Updating the software
 
@@ -65,8 +52,14 @@ To get the latest version of the software, open a terminal and type:
 
 ```
 source activate klusta  # omit the `source` on Windows
-pip install klusta klustaviewa kwiklib --upgrade
+pip install klusta phy phycontrib --upgrade
 ```
+
+
+## Technical details
+
+**klusta** is written in pure Python. The clustering code, written in Python and Cython, currently lives in [another repository](https://github.com/kwikteam/klustakwik2/).
+
 
 ## Links
 

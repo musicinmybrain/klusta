@@ -1,15 +1,13 @@
 name: klusta
-channels:
-  - kwikteam
 dependencies:
   - python
   - pip
-  - numpy=1.9
+  - numpy
   - scipy
   - h5py
   - six
   - cython
-  - click
-  - klustakwik2
   - pip:
+    - klustakwik2
     - tqdm
+    - click
