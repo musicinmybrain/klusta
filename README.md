@@ -43,7 +43,15 @@ The following instructions will install both **klusta** and the **phy KwikGUI**.
     conda env create -n klusta -f environment.yml
     ```
 
-4. **Done**! Now, to use klusta and the phy KwikGUI, you have to first type `source activate klusta` in a terminal (omit the `source` on Windows), and then call `klusta yourfile.prm` to spikesort your data, and `phy kwik-gui yourfile.kwik` to launch the GUI. See the documentation for more details.
+4. **Done**! Now, to use klusta and the phy KwikGUI, enter the directory that contains your files and type:
+
+    ```bash
+    source activate klusta  # omit the `source` on Windows
+    klusta yourfile.prm  # spikesort your data with a PRM file
+    phy kwik-gui yourfile.kwik  # open the GUI
+    ```
+
+    See the documentation for more details.
 
 
 ### Updating the software
