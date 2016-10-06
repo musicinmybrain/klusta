@@ -89,7 +89,7 @@ def _cut_traces(traces, interval_samples):
     assert 0 <= start < end
     # WARNING: this loads all traces into memory! To fix this properly,
     # we'll have to implement lazy chunking in ConcatenatedTraces.
-    size = (end - start) * traces.shape[1] * traces.dtype.itemsize / 1024.**3
+    size = (end - start) * traces.shape[1] * traces.dtype.itemsize / 1024. ** 3
     if size > 1:
         logger.warn("Loading all traces in memory: this will require %.3f GB "
                     "of RAM! ", size)

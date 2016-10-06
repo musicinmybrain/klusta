@@ -191,9 +191,9 @@ class File(object):
         if attr_name in attrs:
             try:
                 out = attrs[attr_name]
-                if isinstance(out, np.ndarray) and out.dtype.kind == 'S':
-                    if len(out) == 1:
-                        out = out[0].decode('UTF-8')
+                if (isinstance(out, (np.ndarray, np.generic)) and
+                        out.dtype.kind == 'S'):
+                    out = out.tostring().decode('UTF-8')
                 return out
             except (TypeError, IOError):
                 logger.debug("Unable to read attribute `%s` at `%s`.",
