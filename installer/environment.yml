@@ -9,7 +9,7 @@ dependencies:
   - cython
   - ipython
   - matplotlib
-  - pyqt
+  - pyqt=4
   - pip:
     - pytest
     - requests
