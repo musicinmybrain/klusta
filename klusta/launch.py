@@ -66,7 +66,7 @@ def detect(model, interval=None, **kwargs):
     return out
 
 
-def cluster(model, spike_ids=None, **kwargs):
+def cluster(model, spike_ids=None, tempdir=None, **kwargs):
     """Return the spike_clusters and metadata.
 
     Doesn't make any change to the model. The caller must add the clustering.
@@ -78,7 +78,7 @@ def cluster(model, spike_ids=None, **kwargs):
 
     # Setup the temporary directory.
     expdir = op.dirname(model.kwik_path)
-    kk_dir = op.join(expdir, '.klustakwik2')
+    kk_dir = tempdir or op.join(expdir, '.klustakwik2')
     _ensure_dir_exists(kk_dir)
 
     params = model.kk2_metadata
