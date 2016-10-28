@@ -59,7 +59,9 @@ class PartialArray(object):
                                  "{0}".format(str(item)))
             out = self._arr[item]
         if self.reshape:
-            return out.reshape(self.reshape)
+            # Avoid error when the reshaped array contains extra dimensions.
+            n = np.prod(self.reshape[1:])
+            return out[..., :n].reshape(self.reshape)
         else:
             return out
 
@@ -844,7 +846,7 @@ class KwikModel(object):
         clusters = self._kwik.groups(self._clustering_path)
         clusters = [int(cluster) for cluster in clusters]
         # NOTE: inverse mapping group name ==> group_number
-        mapping = {a: b.lower()
+        mapping = {a: b.lower() if b else str(b)
                    for a, b in self._cluster_groups_mapping.items()}
         imapping = {b: a for a, b in mapping.items()}
         for cluster in clusters:
