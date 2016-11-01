@@ -871,7 +871,7 @@ class KwikModel(object):
     def _save_cluster_groups(self, cluster_groups):
         assert isinstance(cluster_groups, dict)
         # NOTE: inverse mapping group name ==> group_number
-        mapping = {a: b.lower()
+        mapping = {a: b.lower() if b else str(b)
                    for a, b in self._cluster_groups_mapping.items()}
         imapping = {b: a for a, b in mapping.items()}
         for cluster, group in cluster_groups.items():
@@ -880,6 +880,8 @@ class KwikModel(object):
                 group_id = group
                 assert group_id in mapping
                 group = mapping.get(group_id)
+            elif group in (None, 'None'):
+                group_id = imapping.get(group)
             elif isinstance(group, string_types):
                 group = group.lower()
                 assert group in imapping
