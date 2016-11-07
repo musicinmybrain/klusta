@@ -194,6 +194,7 @@ class File(object):
                 if (isinstance(out, (np.ndarray, np.generic)) and
                         out.dtype.kind == 'S'):
                     out = out.tostring().decode('UTF-8')
+                    out = out.replace('\x00', '')
                 return out
             except (TypeError, IOError):
                 logger.debug("Unable to read attribute `%s` at `%s`.",
