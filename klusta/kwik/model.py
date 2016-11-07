@@ -584,7 +584,7 @@ class KwikModel(object):
         # This class only works with kwik version 2 for now.
         kwik_version = self._kwik.read_attr('/', 'kwik_version')
         if kwik_version != 2:
-            raise IOError("The kwik version is {v} != 2.".format(v=kwik_version))
+            raise IOError("The kwik version is %d != 2." % kwik_version)
 
     @property
     def _channel_groups_path(self):
