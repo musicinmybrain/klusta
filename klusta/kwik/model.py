@@ -803,6 +803,8 @@ class KwikModel(object):
             self._recording_offsets = np.cumsum(np.hstack(([0],
                                                            _spikes[bounds],
                                                            _spikes[-1])))
+        # FIX: remove +1 offset at each recording.
+        self._recording_offsets -= np.arange(len(self._recording_offsets))
         self._spike_samples = _concatenate_spikes(_spikes,
                                                   self._spike_recordings,
                                                   self._recording_offsets)
