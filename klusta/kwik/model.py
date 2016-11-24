@@ -883,8 +883,7 @@ class KwikModel(object):
                 group_id = group_id[0]
             group_id = int(imapping.get(group_id, group_id))
             # Get the group name.
-            assert group_id in mapping
-            group = mapping.get(group_id).lower()
+            group = mapping.get(group_id, 'group_%d' % group_id).lower()
             assert group and isinstance(group, string_types)
             self._cluster_metadata[cluster] = group
 
