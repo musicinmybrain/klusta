@@ -80,5 +80,5 @@ klustaviewa hybrid_10sec.kwik
 Type the following:
 
 ```bash
-phy kwik-gui hybrid_10sec.kwik
+phy kwik-gui hybrid_10sec.kwik --channel-group=0
 ```
