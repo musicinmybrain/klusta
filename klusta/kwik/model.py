@@ -413,6 +413,11 @@ def _read_traces(kwik, dtype=None, n_channels=None):
     n_channels = kwik.read_attr('/application_data/spikedetekt/',
                                 'n_channels',
                                 None)
+    # HACK: old format.
+    nchannels = kwik.read_attr('/application_data/spikedetekt/',
+                               'nchannels',
+                               None)
+    n_channels = n_channels or nchannels
     if n_channels:
         n_channels = int(n_channels)
 
@@ -421,6 +426,19 @@ def _read_traces(kwik, dtype=None, n_channels=None):
     recordings = kwik.children('/recordings')
     traces = []
     opened_files = []
+
+    # HACK when there is no recordings: find a .dat file with the same
+    # base name in the current directory.
+    if not recordings:
+        name = op.splitext(op.basename(kwik.filename))[0]
+        p = op.join(op.dirname(op.realpath(kwik.filename)), name + '.dat')
+        if op.exists(p):
+            logger.debug("Loading traces: %s", p)
+            dat = _dat_to_traces(p, dtype=dtype or 'int16',
+                                 n_channels=n_channels)
+            traces.append(dat)
+            opened_files.append(dat)
+
     for recording in recordings:
         # Is there a path specified to a .raw.kwd file which exists in
         # [KWIK]/recordings/[X]/raw? If so, open it.
@@ -865,8 +883,7 @@ class KwikModel(object):
                 group_id = group_id[0]
             group_id = int(imapping.get(group_id, group_id))
             # Get the group name.
-            assert group_id in mapping
-            group = mapping.get(group_id).lower()
+            group = mapping.get(group_id, 'group_%d' % group_id).lower()
             assert group and isinstance(group, string_types)
             self._cluster_metadata[cluster] = group
 
