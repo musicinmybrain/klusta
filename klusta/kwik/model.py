@@ -565,6 +565,7 @@ class KwikModel(object):
 
         # Initialize fields.
         self._spike_samples = None
+        self._spike_times = None
         self._spike_clusters = None
         self._metadata = None
         self._kk2_metadata = None
@@ -1557,7 +1558,10 @@ class KwikModel(object):
         between consecutive recordings, currently.
 
         """
-        return self.spike_samples.astype(np.float64) / self.sample_rate
+        if self._spike_times is None:
+            self._spike_times = (self.spike_samples.astype(np.float64) /
+                                 self.sample_rate)
+        return self._spike_times
 
     @property
     def cluster_metadata(self):
