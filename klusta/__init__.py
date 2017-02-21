@@ -38,7 +38,7 @@ def _git_version():
 
 __author__ = 'KwikTeam'
 __email__ = 'cyrille.rossant at gmail.com'
-__version__ = '3.0.15'
+__version__ = '3.0.16'
 __version_git__ = __version__ + _git_version()
 
 
