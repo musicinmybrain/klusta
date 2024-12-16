@@ -20,7 +20,7 @@ from ..filter import bandpass_filter, apply_filter, Filter, Whitening
 def test_apply_filter():
     """Test bandpass filtering on a combination of two sinusoids."""
 
-    rate = 10000.
+    rate = 10000
     low, high = 100., 200.
 
     # Create a signal with small and high frequencies.
