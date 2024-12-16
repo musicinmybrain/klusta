@@ -51,7 +51,16 @@ setup(
     package_data={
         'klusta': ['*.txt', '*.prb'],
     },
-    install_requires=['setuptools'],
+    install_requires=[
+        'click',
+        'h5py',
+        'numpy',
+        'scipy',
+        # For pkg_resources:
+        'setuptools',
+        'six',
+        'tqdm',
+    ],
     entry_points={
         'console_scripts': [
             'klusta = klusta.launch:main'
