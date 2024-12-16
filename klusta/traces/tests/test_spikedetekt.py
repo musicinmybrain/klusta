@@ -46,7 +46,7 @@ def test_relative_channels():
 
 
 def test_split_spikes():
-    groups = np.zeros(10, dtype=np.int)
+    groups = np.zeros(10, dtype=int)
     groups[1::2] = 1
 
     idx = np.ones(10, dtype=np.bool)
