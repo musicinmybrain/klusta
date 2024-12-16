@@ -69,7 +69,7 @@ def _split_spikes(groups, idx=None, **arrs):
 
 
 def _array_list(arrs):
-    out = np.empty((len(arrs),), dtype=np.object)
+    out = np.empty((len(arrs),), dtype=object)
     out[:] = arrs
     return out
 
@@ -385,10 +385,10 @@ class SpikeDetekt(object):
         # groups).
         waveforms = _array_list(waveforms)
         assert waveforms.shape == (n_spikes,)
-        assert waveforms.dtype == np.object
+        assert waveforms.dtype == object
 
         masks = _array_list(masks)
-        assert masks.dtype == np.object
+        assert masks.dtype == object
         assert masks.shape == (n_spikes,)
 
         # Reorder the spikes.
