@@ -49,7 +49,7 @@ def test_split_spikes():
     groups = np.zeros(10, dtype=int)
     groups[1::2] = 1
 
-    idx = np.ones(10, dtype=np.bool)
+    idx = np.ones(10, dtype=np.bool_)
     idx[0] = False
     idx[-1] = False
 

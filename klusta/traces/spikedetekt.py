@@ -49,7 +49,7 @@ def _split_spikes(groups, idx=None, **arrs):
               }
     groups = np.asarray(groups)
     if idx is not None:
-        assert idx.dtype == np.bool
+        assert idx.dtype in (bool, np.bool_)
         n_spikes_chunk = np.sum(idx)
         # First, remove the overlapping bands.
         groups = groups[idx]
